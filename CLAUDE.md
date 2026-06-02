@@ -46,14 +46,13 @@ Read `config.json` for the full profile. Key values:
 
 ## Job sources
 
-### Active (4 running)
-1. Remote OK — web search
-2. Remotive — web search
-3. Himalayas — web search
-4. Wellfound — web search
+### Active (17 running)
+**Block A — PM on core boards:** RemoteOK · Remotive · Himalayas · Wellfound · We Work Remotely · Arc.dev · Remote.co
+**Block B — LinkedIn, LATAM, discovery:** LinkedIn · Remote Rocketship · Job na Gringa · Workana · Startup.jobs + DailyRemote + NoDesk
+**Block C — AI/Automation/adjacent:** RemoteAI · Turing · Torre.ai · Himalayas (AI roles)
 
 ### Roadmap (not yet implemented)
-5. We Work Remotely · Remote Rocketship · Job na Gringa · Turing · Contra · LinkedIn (Chrome MCP)
+Contra · FlexJobs
 
 ---
 
