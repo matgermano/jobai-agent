@@ -101,7 +101,10 @@ jobAI/
         ├── apply-ats.md          ← Phase 3: ATS form-filler via Chrome MCP (requires Chrome MCP)
         ├── log-application.md    ← Phase 3: log application to KB + Notion Applications database
         ├── updatekanban.md
-        └── interview-prep.md     ← Phase 4: interview prep per job (reuses apply-prep if exists)
+        ├── interview-prep.md     ← Phase 4: interview prep per job (reuses apply-prep if exists)
+        ├── hunt-search-a.md      ← Phase 5: search subagent — Block A (PM boards, 7 searches)
+        ├── hunt-search-b.md      ← Phase 5: search subagent — Block B (LATAM/discovery, 5 searches)
+        └── hunt-search-c.md      ← Phase 5: search subagent — Block C (AI/automation, 6 searches)
 ```
 
 ---

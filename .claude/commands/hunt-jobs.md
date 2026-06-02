@@ -1,23 +1,33 @@
 # /hunt-jobs
 
 ## Goal
-Search for remote job listings across 17 sources covering PM, AI, automation, and adjacent roles. Score each one. For every job scoring 9 or 10, automatically generate a full application package. Send one email with everything ready.
+Search for remote job listings across 17 sources using 3 parallel search agents. Score every result. For every job scoring 9 or 10, automatically generate a full application package. Send one email with everything ready.
 
-## Sources (17 active)
-RemoteOK · Remotive · Himalayas · Wellfound · We Work Remotely · LinkedIn · Remote Rocketship · Job na Gringa · Turing · Arc.dev · Remote.co · Startup.jobs · RemoteAI · NoDesk · DailyRemote · Workana · Torre.ai
+## Architecture — multi-agent
+Three search subagents run in parallel, each owning one block of sources. The orchestrator (this command) consolidates their results, scores, and handles all downstream steps.
 
-## Token budget (STRICT)
+```
+hunt-jobs (orchestrator)
+├── hunt-search-a  → Block A: 7 PM board searches    ┐
+├── hunt-search-b  → Block B: 5 LATAM/discovery       ├── parallel
+└── hunt-search-c  → Block C: 6 AI/automation         ┘
+        ↓ merge + dedup + score
+        ↓ apply-prep for 9+ (sequential, max 3)
+        ↓ Notion Top Jobs + email + git
+```
 
-**Phase 1 — Search:**
-- 18 web searches — run every single one, no skipping
-- Maximum 5 page fetches (listing pages only — never individual job URLs, never ATS pages like greenhouse, lever, ashby)
-- Extract data from snippets first; only fetch a page if snippets are insufficient for that source
+## Token budget
 
-**Phase 2 — Apply-prep for 9+ jobs:**
-- 1 fetch per job URL (required)
-- Maximum 2 web searches for company research per job
-- Maximum 1 additional fetch for company site per job
-- Maximum 3 jobs processed per run
+**Phase 1 — Search (per subagent, independent budgets):**
+- Agent A: 7 searches, max 2 fetches
+- Agent B: 5 searches, max 2 fetches
+- Agent C: 6 searches, max 1 fetch
+
+**Phase 2 — Apply-prep (orchestrator, per 9+ job):**
+- 1 fetch for job URL
+- Max 2 web searches for company research
+- Max 1 optional fetch for company site
+- Max 3 jobs processed per run
 
 ---
 
@@ -29,47 +39,24 @@ RemoteOK · Remotive · Himalayas · Wellfound · We Work Remotely · LinkedIn �
 - Read `application_profile.json` — interests + apply-prep inputs
 - Read `application_narratives.md` — needed for STAR stories in apply-prep
 
-### 2. Run all 18 searches
+### 2. Spawn 3 search agents in parallel
+Launch all 3 simultaneously using the Agent tool with `run_in_background: true`.
 
-**Block A — Product Manager roles on core boards (7 searches):**
-```
-A1: site:remoteok.com "product manager" remote worldwide -"US only" -"United States only"
-A2: site:remotive.com "product manager" worldwide remote -"US only"
-A3: site:himalayas.app "product manager" remote worldwide
-A4: site:wellfound.com "product manager" remote worldwide -"US only"
-A5: site:weworkremotely.com "product manager" remote -"US only"
-A6: site:arc.dev "product manager" remote worldwide -"US only"
-A7: site:remote.co "product manager" remote worldwide -"US only"
-```
+**Agent A prompt:**
+> "Read `.claude/commands/hunt-search-a.md` for your full instructions. Execute every step exactly as written. Run all 7 searches. Return only a JSON array of candidates that passed the pre-filter — no other text."
 
-**Block B — LinkedIn, LATAM, and discovery boards (5 searches):**
-```
-B1: site:linkedin.com/jobs "product manager" remote worldwide -"US only" -"United States only"
-B2: site:remoterocketship.com "product manager" OR "head of product" remote -"US only"
-B3: site:jobnagringa.com.br "product manager" remote
-B4: site:workana.com "product manager" remote worldwide
-B5: (site:startup.jobs OR site:dailyremote.com OR site:nodesk.co) "product manager" remote worldwide -"US only"
-```
+**Agent B prompt:**
+> "Read `.claude/commands/hunt-search-b.md` for your full instructions. Execute every step exactly as written. Run all 5 searches. Return only a JSON array of candidates that passed the pre-filter — no other text."
 
-**Block C — AI, Automation, and adjacent roles (6 searches):**
-```
-C1: ("AI builder" OR "AI engineer" OR "AI product manager") remote worldwide -"US only" -"United States only"
-C2: ("automation specialist" OR "process transformation" OR "solutions engineer") remote worldwide -"US only"
-C3: site:remoteai.io "product manager" OR "AI engineer" OR "automation" remote
-C4: site:turing.com "product manager" OR "AI engineer" remote worldwide
-C5: site:torre.ai "product manager" OR "AI" remote worldwide -"US only"
-C6: site:himalayas.app ("AI engineer" OR "automation specialist" OR "solutions engineer") remote worldwide
-```
+**Agent C prompt:**
+> "Read `.claude/commands/hunt-search-c.md` for your full instructions. Execute every step exactly as written. Run all 6 searches. Return only a JSON array of candidates that passed the pre-filter — no other text."
 
-Run all 18. Do not skip any. Do not add more.
+Wait for all 3 agents to complete. Each returns a JSON array of raw candidates.
 
-### 3. Extract from search snippets
-For each result, extract WITHOUT fetching the page:
-- title, company, url, source, location_type
-- salary_range (from snippet if shown, otherwise "not listed")
-- 3–5 key_requirements (from snippet text only)
-
-For sources where snippets are thin (LinkedIn, Workana, Torre.ai, DailyRemote), use 1 page fetch to get a listing page — counts against the 5-fetch budget.
+### 3. Merge and deduplicate
+Concatenate the 3 arrays into one list.
+Remove duplicates by URL — keep the first occurrence.
+This is the raw candidate pool.
 
 ### 4. Apply location filter (hard rules — zero exceptions)
 **Reject immediately if** snippet or page contains ANY of:
@@ -228,9 +215,9 @@ git push origin main
 ### 10. Print summary — then STOP
 ```
 ✅ Job Hunt — YYYY-MM-DD
-Sources: 17 (A1–A7, B1–B5, C1–C6)
-Searches: 18 | Page fetches: X/5
-Jobs found: X | Passed filter: X | New to KB: X
+Architecture: 3 parallel search agents (A: 7 · B: 5 · C: 6 searches)
+Agent A results: X raw | Agent B results: X raw | Agent C results: X raw
+After merge + dedup: X candidates | Passed location filter: X | New to KB: X
 Score 9+: X → packages: [list of company slugs]
 Score 5–8: X
 Email: sent / skipped
