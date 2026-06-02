@@ -1,23 +1,23 @@
-# Prompt Engineering — Padrões Usados no jobAI
+# Prompt Engineering — Patterns Used in jobAI
 
-## O que é prompt engineering aqui
+## What prompt engineering means here
 
-No jobAI, "prompt engineering" não é sobre escrever frases bonitas para o ChatGPT. É sobre arquitetar instruções que um agente autônomo segue de forma confiável, repetível e segura — sem supervisão humana em cada execução.
+In jobAI, prompt engineering is not about crafting clever phrases for a chatbot. It is about architecting instructions that an autonomous agent follows reliably, repeatably, and safely — without human supervision on each run.
 
-A diferença entre um agente que funciona bem e um que alucina ou gasta tokens à toa está quase inteiramente na qualidade dos prompts e na estrutura de como o contexto é entregue.
+The difference between an agent that works well and one that hallucinates or wastes tokens comes almost entirely from the quality of the prompts and how context is delivered. Seven concrete patterns are used throughout this project.
 
 ---
 
-## Padrão 1: CLAUDE.md como memória persistente do agente
+## Pattern 1 — CLAUDE.md as persistent agent memory
 
-**O que é:**  
-Em vez de repetir o perfil do candidato, as regras de localização e os constraints éticos em cada arquivo de comando, tudo isso fica centralizado no `CLAUDE.md`. Claude lê esse arquivo automaticamente no início de cada sessão — é o sistema prompt do agente.
+**What it is:**
+Instead of repeating the candidate profile, location rules, and ethical constraints in every command file, all of that lives in `CLAUDE.md`. Claude reads this file automatically at the start of every session — it acts as the agent's system prompt.
 
-**Por que funciona:**  
-Claude Code trata o `CLAUDE.md` como contexto base. Todo agente que roda no projeto — seja local, seja Routine — começa com esse contexto. Você muda as regras uma vez no `CLAUDE.md` e todos os agentes herdam a mudança.
+**Why it works:**
+Every agent that runs in this project — whether triggered locally or via a Routine — starts with the same behavioral context. You change the rules once in `CLAUDE.md` and all three agents inherit the update on their next run. No duplication, no drift between agents.
 
 ```markdown
-# CLAUDE.md (trecho)
+# CLAUDE.md (excerpt)
 
 ## Prime directive
 I only work with what exists. I never invent experience, skills,
@@ -25,181 +25,186 @@ projects, or achievements that are not already in data/cv.md.
 I reframe and surface — I never fabricate.
 ```
 
-Essa regra aparece uma vez. Mas o CV Optimizer, o Gap Analyzer e o Job Hunter todos a seguem — porque todos leem o `CLAUDE.md`.
+This rule appears once. The CV Optimizer, Gap Analyzer, and Job Hunter all follow it — because all three read `CLAUDE.md`.
 
-**Quando NÃO usar CLAUDE.md para algo:**  
-Parâmetros que mudam frequentemente — como target_roles e salary range — ficam em `config.json`. `CLAUDE.md` é para regras comportamentais estáveis. `config.json` é para parâmetros configuráveis.
+**When NOT to use CLAUDE.md for something:**
+Frequently-tuned parameters (target roles, salary range, job sources) live in `config.json`. `CLAUDE.md` is for stable behavioral rules. `config.json` is for configurable parameters. Keeping them separate means you can expand the job search scope without touching the agent's behavioral constraints.
 
 ---
 
-## Padrão 2: Token budget explícito
+## Pattern 2 — Explicit token budgets
 
-**O problema sem esse padrão:**  
-Um agente sem limite pode decidir fazer 20 buscas na web, abrir 15 páginas e usar 100k tokens numa única execução. Além do custo, isso cria comportamento não-determinístico — resultados diferentes dependendo de quantas páginas ele decidiu abrir.
+**The problem without this pattern:**
+An agent without limits might decide to run 20 web searches, open 15 full pages, and consume 100k tokens in a single execution. Beyond cost, this creates non-deterministic behavior — results vary based on how much content the agent happened to fetch that day.
 
-**Como está implementado no hunt-jobs.md:**
-
+**Implementation in `hunt-jobs.md`:**
 ```markdown
 ## Token Budget (STRICT — do not exceed)
 - Max 4 web searches total across all sources
-- Max 2 full page fetches (only if snippet is insufficient)
+- Max 2 full page fetches (only if search snippet is insufficient)
 - Extract all data from snippets — do not fetch pages unnecessarily
 - If budget is reached, stop searching and proceed to scoring
 ```
 
-**O resultado:**  
-Cada run do Job Hunter é previsível — entre 1.500 e 2.500 tokens. Sem surpresas no consumo do plano.
+**The result:**
+Every Job Hunter run consumes between 1,500 and 2,500 tokens. Predictable cost, predictable behavior.
 
-**Regra geral:**  
-Para qualquer agente que acessa a web ou lê muitos arquivos, defina limites explícitos no prompt: "max X searches", "max Y fetches", "read only files matching pattern Z". O agente vai respeitá-los.
+**General rule:**
+For any agent that accesses the web or reads many files, define explicit limits in the prompt: "max X searches", "max Y fetches", "read only files matching pattern Z". The agent will respect them.
 
 ---
 
-## Padrão 3: Hard rules (nunca inventar)
+## Pattern 3 — Hard rules stated explicitly and repeated
 
-**O problema:**  
-LLMs são treinados para serem úteis e completar padrões. Se você pede pra otimizar um CV e não diz explicitamente o que não pode fazer, o modelo vai "ajudar" adicionando skills que parecem relevantes mas que você não tem. Em um CV, isso é fraude.
+**The problem:**
+LLMs are trained to be helpful and complete patterns. If you ask a model to optimize a CV without explicitly stating what it cannot do, it will "help" by adding skills that seem relevant but that the candidate doesn't have. On a CV, that is misrepresentation.
 
-**Como está implementado:**
-
+**Implementation in `optimize-cv.md`:**
 ```markdown
-## Hard Rules — CV Optimizer
+## Hard Rules — NEVER violate
 - NEVER add skills, tools, experiences, or qualifications not present in data/cv.md
 - NEVER change company names, job titles, or dates
 - NEVER address ❌ genuine gaps — those belong in the study list only
-- Rewrite bullets only — do not add new bullet points
+- Rewrite existing bullets only — do not add new bullet points
 - Preserve ALL metrics exactly as written (never round up, never estimate)
 ```
 
-Essas regras aparecem múltiplas vezes, em locais diferentes do prompt. Repetição deliberada — o modelo precisa ver a constraint várias vezes para não escorregar.
+These rules appear multiple times across the command file — in the introduction, in the step-by-step instructions, and in the verification checklist. Deliberate repetition: the model needs to encounter the constraint at multiple points to consistently respect it.
 
-**Distinção surface vs genuine gap:**  
-Esta é a constraint ética central do sistema:
+**The surface vs. genuine gap distinction:**
+This is the core ethical constraint of the entire system.
 
 ```
-⚠️ Surface gap: A skill existe na sua experiência mas não está visível no CV
-   → O agente PODE reescrever bullets para surfacear
-   → Ex: você usou dados para tomar decisões mas o bullet diz "liderança de produto"
-         O agente reescreve para "led data-driven product decisions"
+⚠️ Surface gap:
+  The skill EXISTS in the candidate's experience but is not visible in the CV.
+  → The agent MAY rewrite the bullet to surface it using market language.
+  → Example: candidate used data to make decisions but bullet says "led product"
+             Agent rewrites: "led data-driven product decisions, reducing time-to-market by 35%"
 
-❌ Genuine gap: A skill não existe na sua experiência
-   → O agente NUNCA adiciona ao CV
-   → Vai para o study list — você decide se quer aprender
-   → Ex: você não tem experiência com machine learning pipelines
-         Vai pro study list. Ponto.
+❌ Genuine gap:
+  The skill DOES NOT exist in the candidate's experience.
+  → The agent NEVER adds it to the CV.
+  → Goes to the study list. The human decides whether to learn it.
+  → Example: candidate has no ML pipeline experience
+             Goes to study list as "Machine Learning pipelines — appeared in 5 jobs this week"
 ```
 
 ---
 
-## Padrão 4: config.json como fonte de verdade configurável
+## Pattern 4 — config.json as the single source of truth for parameters
 
-**O que é:**  
-Qualquer parâmetro que pode precisar mudar no futuro fica em `config.json`, não hardcoded nos prompts. Os prompts referenciam o arquivo — não definem os valores.
+**What it is:**
+Any parameter that might need to change in the future lives in `config.json`, not hardcoded in prompts. Command files reference the file rather than embedding values.
 
 ```markdown
-# No hunt-jobs.md:
+# In hunt-jobs.md:
 Read config.json and use:
-- search.target_roles for role matching
-- search.location_rules.accept and .reject for filtering
+- search.target_roles for role matching and scoring
+- search.location_rules.accept and .reject for hard filtering
 - search.salary_min_usd and salary_max_usd for salary scoring
 - search.sources for which job boards to search
 ```
 
-**Por que importa:**  
-Quando você adiciona uma nova role ao target (ex: "AI Builder" — card 1.1), você muda `config.json`. Todos os agentes capturam a mudança na próxima execução, sem precisar editar nenhum arquivo de comando.
-
-Separar configuração de lógica é um princípio básico de engenharia de software — aqui aplicado a agentes.
+**Why it matters:**
+When a new target role is added to `config.json` (e.g., "AI Builder" — added in card 1.1), all three agents pick it up on their next run. Zero edits to command files. This is the same separation-of-concerns principle from software engineering applied to agent design: separate configuration from logic.
 
 ---
 
-## Padrão 5: Critério de sucesso explícito
+## Pattern 5 — Explicit success criteria and termination signal
 
-**O que é:**  
-Todo prompt de agente termina com um critério claro de quando parar e o que constitui sucesso.
+**What it is:**
+Every agent prompt ends with a clear definition of done and an explicit stop instruction.
 
 ```markdown
-# No hunt-jobs.md:
+# At the end of hunt-jobs.md:
 When complete:
-- outputs/jobs_YYYY-MM-DD.json saved with all jobs found today
-- data/knowledge_base.json updated (deduplicated)
-- data/kb_YYYY-WNN.json updated
+- outputs/jobs_YYYY-MM-DD.json saved with all scored jobs
+- data/knowledge_base.json updated (new jobs appended, deduplicated)
+- data/kb_YYYY-WNN.json updated (weekly slice current)
 - Git commit and push completed
-- Print summary: "Job Hunt complete: X new jobs found, Y duplicates skipped, Z high-fit alerts sent"
+- Print: "Job Hunt complete: X new jobs found, Y duplicates skipped, Z alerts sent"
 - Stop.
 ```
 
-**Por que "Stop." explicitamente?**  
-Sem isso, o agente pode continuar "melhorando" o trabalho — verificando mais fontes, refinando scores, adicionando análises. O "Stop." sinaliza que o trabalho foi concluído. Em Routines, o agente encerra a sessão.
+**Why "Stop." explicitly?**
+Without it, the agent might continue — refining scores, checking one more source, adding analysis. "Stop." is the termination signal. In Routines, a clean stop means the session ends and resources are released.
 
 ---
 
-## Padrão 6: Output estruturado e versionado
+## Pattern 6 — Versioned, auditable outputs
 
-**CV versioning:**  
-Todo output do CV Optimizer é `cv_v[N].md`, onde N incrementa a cada execução. Nunca sobrescreve o anterior.
+**CV versioning:**
+Every CV Optimizer output is saved as `cv_v[N].md` where N increments on each run. The previous version is never overwritten.
 
-**Por que:**  
-- Permite rollback: se uma versão ficou pior, você pode comparar
-- O changelog explica cada mudança: o que mudou, por que, qual gap estava endereçando
-- O histórico de versões é evidência de que o sistema funciona — você pode mostrar em entrevistas: "o agente melhorou a visibilidade de 4 skills ao longo de 6 semanas"
+**Why:**
+- **Rollback:** If an optimization made the CV worse, you can compare versions and revert
+- **Auditability:** The changelog explains every change: what was rewritten, why, which gap it addressed
+- **Portfolio evidence:** The version history proves the system works — you can show that specific skills became more visible across multiple optimization cycles
 
-**Changelog auditável:**  
+**Changelog format:**
 ```markdown
-# outputs/cv_changelog.md
-
 ## cv_v3.md — 2026-06-08
 ### Changes
-- Meridian Software Group bullet 3: added "AI and automation integration" phrase
-  **Why:** "AI integration" was a surface gap (present in experience, not visible)
-  **Gap addressed:** ⚠️ AI integration (appeared in 7 jobs this week, ↑ from 4)
+- Meridian Software Group, bullet 3: added "AI and automation integration"
+  Why: "AI integration" was a surface gap — present in experience, not visible in CV
+  Gap addressed: ⚠️ AI integration (appeared in 7 jobs this week, ↑ from 4)
 ```
+
+The changelog is machine-generated by the agent — every change is documented without requiring manual notes.
 
 ---
 
-## Padrão 7: Prompts auto-suficientes (self-contained)
+## Pattern 7 — Self-contained prompts for stateless agents
 
-**O problema com prompts que assumem contexto:**  
-Em Routines, cada execução começa do zero. O agente não tem memória de execuções anteriores. Se o prompt diz "continue de onde parou", o agente não sabe onde parou.
+**The problem with prompts that assume context:**
+In Routines, each execution starts with zero memory. The agent doesn't know what it did yesterday. A prompt that says "continue from where you left off" will fail because the agent has no idea where that was.
 
-**Como os prompts do jobAI são estruturados:**
-
-```markdown
-# hunt-jobs.md (trecho inicial)
+**How jobAI prompts are structured:**
+```
 You are the jobAI automated job hunter.
 Read CLAUDE.md for full context on the candidate profile and rules,
-then read .claude/commands/hunt-jobs.md and execute every step exactly
-as written.
+then read .claude/commands/hunt-jobs.md and execute every step exactly as written.
 ```
 
-Essa frase faz o agente reconstruir todo o contexto a partir dos arquivos do repositório. É determinístico — o mesmo comportamento toda execução.
+This instructs the agent to reconstruct all necessary context from the repository files on every run. It is deterministic — the same behavior every execution, regardless of what happened in previous runs.
 
-**Regra geral para Routines:**  
-Seu prompt deve funcionar se dado a alguém que acabou de ser contratado para fazer a tarefa e tem acesso apenas ao repositório. Sem histórico, sem contexto implícito.
+**The test for a good Routine prompt:**
+Imagine handing the prompt to someone who just joined the project and has only access to the repository. Can they execute the task correctly with no other information? If yes, the prompt is self-contained. If no, it has implicit dependencies that will cause failures.
 
 ---
 
-## O que não fazer
+## What not to do
 
-**Prompts vagos:**
+**Vague task definition:**
 ```
-❌ "Busque vagas relevantes para mim"
-✅ "Search these 4 sources for these 12 roles, apply these location filters, score 1-10 using this criteria"
-```
-
-**Sem limites:**
-```
-❌ "Pesquise quantas fontes precisar"
-✅ "Max 4 searches, max 2 page fetches. Stop after reaching budget."
+❌ "Search for relevant jobs"
+✅ "Search these 4 sources for these 12 roles, apply hard location filters,
+    score 1–10 using this criteria, save to this file format"
 ```
 
-**Sem critério de sucesso:**
+**No resource limits:**
 ```
-❌ "Analise os gaps e salve o relatório"
-✅ "Save outputs/gap_report.md with these exact sections. Commit and push. Print summary. Stop."
+❌ "Search as many sources as needed"
+✅ "Max 4 searches, max 2 page fetches. Stop when budget is reached."
 ```
 
-**Regras implícitas:**
+**No termination signal:**
 ```
-❌ (assume que o agente vai entender que não pode inventar skills)
-✅ "NEVER add skills not present in data/cv.md" (explícito, repetido 3 vezes)
+❌ "Analyze gaps and save the report"
+✅ "Save outputs/gap_report.md with these exact sections. Commit and push.
+    Print summary. Stop."
+```
+
+**Implicit ethical constraints:**
+```
+❌ (assume the agent knows not to fabricate skills)
+✅ "NEVER add skills not present in data/cv.md" — stated explicitly, repeated 3 times
+```
+
+**Mixing configuration with logic:**
+```
+❌ "Search for Product Manager, Senior PM, AI Builder, Automation Specialist..."
+   (hardcoded in the prompt — requires editing the prompt to add a new role)
+✅ "Read config.json and use search.target_roles"
+   (roles are configured separately — add a role in config.json, done)
 ```

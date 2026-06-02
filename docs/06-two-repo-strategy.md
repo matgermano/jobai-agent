@@ -1,162 +1,175 @@
-# Estratégia de Dois Repositórios
+# Two-Repo Strategy — Private Data + Public Portfolio
 
-## O problema
+## The problem
 
-O jobAI tem dois tipos de conteúdo com necessidades opostas:
+jobAI contains two types of content with opposing requirements:
 
-| Tipo | Exemplos | Necessidade |
+| Type | Examples | Requirement |
 |---|---|---|
-| **Arquitetura** | Commands, workflows, CLAUDE.md, docs | Público — portfolio, showcase |
-| **Dados pessoais** | cv.md, config.json, application_profile.json | Privado — nunca expor |
+| **Architecture** | Commands, workflows, CLAUDE.md, docs | Public — portfolio and showcase |
+| **Personal data** | cv.md, config.json, application_profile.json | Private — never expose |
 
-E um constraint técnico crítico: **as Routines clonam o repo do GitHub para cada execução**. Ou seja, os dados pessoais precisam estar no repo para a automação funcionar.
+There is also a hard technical constraint: **Routines clone the GitHub repository on every execution.** The agents need `data/cv.md`, `config.json`, and `application_profile.json` to exist in the repo in order to run. You cannot gitignore them without breaking the automation.
 
-Você não pode ter os dois em um repo público — teria que escolher entre automação funcionando e privacidade. A solução é dois repos.
-
----
-
-## A solução
-
-```
-github.com/matgermano/jobAI  (PRIVADO)
-├── Todo o conteúdo pessoal (cv.md, config.json, etc.)
-├── É daqui que as Routines clonam
-├── Todo o conteúdo de arquitetura também está aqui
-└── Nunca se torna público
-
-        ↓ auto-sync (GitHub Action)
-
-github.com/matgermano/jobai-agent  (PÚBLICO)
-├── Apenas os arquivos de arquitetura (commands, workflows, docs)
-├── Arquivos exemplo sem dados reais (config.example.json, cv.example.md)
-└── Portfolio showcase — qualquer pessoa pode ver, clonar, adaptar
-```
+This means a single public repo cannot work — it would either expose personal data or break the automation.
 
 ---
 
-## O que está em cada repo
+## The solution — two repos with automatic sync
 
-### Repositório Privado (jobAI)
 ```
-Tudo — incluindo:
-├── data/cv.md                    ← CV real com dados reais
-├── config.json                   ← Salary target, preferências reais
-├── application_profile.json      ← Nome, telefone, email, LinkedIn reais
-├── application_narratives.md     ← Histórias STAR reais
-├── data/knowledge_base.json      ← Histórico de vagas encontradas
-├── outputs/                      ← Relatórios e CVs gerados
-└── .github/workflows/sync-to-public.yml  ← O mecanismo de sync
+github.com/matgermano/jobAI  (PRIVATE)
+├── All personal data lives here
+├── All architecture files also live here
+├── Routines clone from here — automation works correctly
+└── Never made public
+
+        ↓  GitHub Action fires on every push
+        ↓  Copies only safe files
+
+github.com/matgermano/jobai-agent  (PUBLIC)
+├── Architecture files only (commands, workflows, docs, CLAUDE.md)
+├── Anonymized example files (config.example.json, cv.example.md)
+└── Portfolio showcase — anyone can see, clone, and adapt it
 ```
 
-### Repositório Público (jobai-agent)
+The sync is **fully automatic**. When you push any change to a command file, workflow, or documentation note in the private repo, the public repo updates itself within seconds. You never need to manually copy or sync anything.
+
+---
+
+## What lives where
+
+### Private repo only (never synced)
 ```
-Apenas:
-├── CLAUDE.md                     ← Arquitetura do agente (usa "Alex Rivera")
-├── README.md                     ← Documentação do projeto
-├── roadmap_completo.md           ← Roadmap completo
-├── config.example.json           ← Estrutura do config com dados fictícios
-├── application_profile.example.json  ← Estrutura do perfil com dados fictícios
-├── data/cv.example.md            ← CV fictício (Alex Rivera)
-├── .claude/commands/*.md         ← Toda a lógica dos agentes (o showcase principal)
-├── .github/workflows/            ← Workflows (exceto sync-to-public.yml)
-└── docs/*.md                     ← Esta pasta de documentação
+config.json                    ← real salary target, real preferences
+data/cv.md                     ← real CV with real employer history
+application_profile.json       ← real name, phone, email, LinkedIn
+application_narratives.md      ← real STAR stories
+data/knowledge_base.json       ← accumulated job search history
+data/kb_YYYY-WNN.json          ← weekly job data slices
+outputs/                       ← all generated reports and CV versions
+.github/workflows/sync-to-public.yml  ← the sync mechanism itself
+```
+
+### Public repo (auto-synced from private)
+```
+CLAUDE.md                      ← agent architecture (uses "Alex Rivera")
+README.md                      ← project documentation
+roadmap_completo.md            ← full project roadmap
+LICENSE + .gitignore           ← standard repo files
+config.example.json            ← config structure with fictional data
+data/cv.example.md             ← CV structure with fictional data
+application_profile.example.json ← profile structure with fictional data
+.claude/commands/*.md          ← all agent logic — the main showcase
+.github/workflows/*.yml        ← all automation workflows (except sync)
+docs/*.md                      ← this documentation folder
 ```
 
 ---
 
-## Como funciona o auto-sync
+## How the sync workflow works
 
-O arquivo `.github/workflows/sync-to-public.yml` no repositório privado faz:
+The file `.github/workflows/sync-to-public.yml` in the private repo:
 
-1. **Trigger:** Dispara em todo push para `main` que toca arquivos de arquitetura
-2. **Clone:** Clona o repo público em `/tmp/public-repo`
-3. **Cópia seletiva:** Copia apenas os arquivos seguros (nunca `config.json`, nunca `cv.md`)
-4. **Commit:** Se houve mudança, commita e faz push para o repo público
+```yaml
+on:
+  workflow_dispatch:          ← can be triggered manually at any time
+  push:
+    branches: [main]
+    paths:                    ← only fires when relevant files change
+      - 'CLAUDE.md'
+      - '.claude/commands/**'
+      - '.github/workflows/**'
+      - 'docs/**'
+      - '*.example.*'
+      # ... (other architecture files)
 
-O resultado: quando você adiciona um novo comando ou melhora um workflow no repo privado, o repo público atualiza automaticamente. **Você nunca precisa lembrar de sincronizar manualmente.**
+jobs:
+  sync:
+    steps:
+      - Checkout private repo
+      - Clone public repo to /tmp/public-repo
+      - Copy architecture files (explicitly listed — not a wildcard)
+      - Skip sync-to-public.yml itself (private-only workflow)
+      - git add -A in public repo
+      - If changes exist: commit + push to public repo
+      - If no changes: exit silently
+```
 
-### Arquivos que disparam o sync:
-- `CLAUDE.md`
-- `README.md`
-- `roadmap_completo.md`
-- `LICENSE`, `.gitignore`
-- `.claude/commands/**`
-- `.github/workflows/**` (exceto `sync-to-public.yml`)
-- `config.example.json`
-- `data/cv.example.md`
-- `application_profile.example.json`
-- `docs/**`
-
-### Arquivos que NUNCA são sincronizados:
-- `config.json` ← dados pessoais
-- `data/cv.md` ← CV real
-- `application_profile.json` ← contato pessoal
-- `application_narratives.md` ← histórias pessoais
-- `data/knowledge_base.json` ← histórico de vagas
-- `data/kb_*.json` ← slices semanais
-- `outputs/` ← relatórios gerados
-- `.github/workflows/sync-to-public.yml` ← o próprio workflow de sync
+**Why explicit file lists instead of wildcards?**
+Wildcards could accidentally include new personal data files added in the future. Explicit lists mean only the files you've consciously decided are safe will ever be synced. Adding a new file to the public repo requires a deliberate decision to add it to the sync list.
 
 ---
 
-## Setup inicial (one-time)
+## Setup (one-time, already done)
 
-Para ativar o sync, você precisa fazer isso uma vez:
+For reference and for anyone adapting this pattern:
 
-### 1. Criar o repositório público
+### 1. Create the public repo
+GitHub → New repository → name: `jobai-agent` → Public → Create (empty)
 
-No GitHub: New repository → nome `jobai-agent` → Public → Create
+### 2. Create a Personal Access Token (PAT)
+- GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+- Name: `jobai-public-repo-sync`
+- Expiration: 1 year
+- Scope: `repo`
+- Copy the generated token (shown only once, starts with `ghp_...`)
 
-### 2. Criar um Personal Access Token (PAT)
+### 3. Add the PAT as a secret in the private repo
+- Private repo → Settings → Secrets and variables → Actions
+- New repository secret → Name: `PUBLIC_REPO_PAT` → Value: the token
+- Save
 
-1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Generate new token (classic)
-3. Name: `jobai-public-repo-sync`
-4. Expiration: 1 year (ou "No expiration" — lembre de renovar)
-5. Scope: `repo` (acesso completo a repositórios)
-6. Generate token → copiar o token
+### 4. First sync
+Push any change to a tracked file in the private repo, or trigger the workflow manually via GitHub → Actions → Sync to Public Showcase → Run workflow.
 
-### 3. Adicionar o PAT como secret no repositório privado
+---
 
-1. No repo privado (jobAI) → Settings → Secrets and variables → Actions
-2. New repository secret
-3. Name: `PUBLIC_REPO_PAT`
-4. Value: o token copiado no passo anterior
-5. Add secret
+## Verifying the sync
 
-### 4. Fazer o primeiro sync manual
+After any push to the private repo that touches architecture files:
 
-Edite qualquer arquivo de arquitetura (ex: adicione uma linha ao README.md), commite e faça push para o repo privado. O workflow de sync vai disparar e popular o repo público.
-
-Alternativamente, você pode fazer o primeiro push manual:
 ```bash
-# Clone o público
-git clone https://github.com/matgermano/jobai-agent.git /tmp/public
-# Copie os arquivos relevantes
-# Commit e push
+# Check the sync workflow ran successfully
+gh run list --workflow=sync-to-public.yml --limit=3
+
+# Expected output:
+# completed  success  [commit message]  Sync to Public Showcase  main  push
 ```
 
----
+You can also visit `github.com/matgermano/jobai-agent` and verify the files updated.
 
-## Por que não usar submodules ou branches?
-
-**Git submodules** criam uma relação entre repos mas não resolvem o problema de separação de dados — você ainda precisaria de dois repos separados e a sincronização seria mais complexa.
-
-**Branches públicas** dentro do mesmo repo privado: o repo inteiro ou é público ou é privado — não existe granularidade por branch na visibilidade do GitHub.
-
-**A solução de dois repos com sync automático** é a mais simples e mantível. O overhead é mínimo — uma vez configurado, funciona sozinho para sempre.
+If the sync fails, the most common causes are:
+- `PUBLIC_REPO_PAT` secret expired (PATs expire annually by default — regenerate and update the secret)
+- The public repo's default branch name differs (should be `main`)
+- A merge conflict in the public repo (shouldn't happen with this pattern since the sync always overwrites)
 
 ---
 
-## O valor para portfolio
+## What the public repo shows to an interviewer
 
-O repositório público mostra:
+Someone reviewing `github.com/matgermano/jobai-agent` sees:
 
-1. **Arquitetura de agente autônomo** — como CLAUDE.md funciona como memória
-2. **Prompt engineering real** — os arquivos de comando com budgets, hard rules, critérios de sucesso
-3. **CI/CD para agentes** — workflows com artifacts, job dependencies, error handling
-4. **Padrões de dados** — TTL, deduplication, versioning de outputs
-5. **Integração MCP** — Notion, Gmail como ferramentas nativas do agente
-6. **Roadmap de produto** — fases, cards, critérios de pronto
+1. **Agent architecture** — `CLAUDE.md` as a system prompt, `config.json` pattern, file structure design decisions
+2. **Prompt engineering** — the command files show real token budgets, hard ethical rules, self-contained prompts, explicit success criteria
+3. **CI/CD for agents** — GitHub Actions workflows with job dependencies, artifact passing, error handling, output verification steps
+4. **Data design** — TTL strategy, URL deduplication, weekly KB slices for trend analysis, versioned CV outputs
+5. **MCP integrations** — Notion and Gmail connected as native agent tools
+6. **Product thinking** — the roadmap shows phased delivery, learning goals per card, and criteria for done
 
-É um case de estudo completo, funcionando em produção, com dados reais de execução visíveis via git history — sem expor nenhum dado pessoal.
+All of this is visible without any personal data being exposed. The git history in the private repo (which remains private) is the full audit trail of the system in production.
+
+---
+
+## Adapting this pattern for other projects
+
+The two-repo strategy with auto-sync is applicable to any project where:
+- The automation needs secrets or personal data in the repo
+- You want a clean public showcase of the architecture
+- You want the public version to stay current without manual effort
+
+The key elements to replicate:
+1. A GitHub Actions workflow in the private repo that copies specific files to the public repo using a PAT
+2. Explicit allowlist of files to sync (not wildcards)
+3. Anonymized example files for anything personal (config, data, profile)
+4. The sync workflow excluded from its own sync list

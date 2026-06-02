@@ -1,112 +1,112 @@
-# Data Hygiene em Agentes de IA
+# Data Hygiene in AI Agents
 
-## O problema
+## The problem
 
-Agentes que acumulam dados sem limpeza ficam progressivamente piores. O motivo é simples: análises baseadas em dados sujos produzem insights incorretos.
+Agents that accumulate data without cleaning it get progressively worse over time. The analysis degrades because it's built on dirty data, and dirty data produces incorrect insights.
 
-No contexto do jobAI, dois problemas específicos:
+In jobAI, two specific problems arise without hygiene:
 
-**1. Duplicação:** A mesma vaga pode aparecer no RemoteOK e no Remotive na mesma semana. Se ambas forem salvas, o gap_report vai contar essa vaga como duas demandas separadas pela mesma skill. Skills que aparecem em 3 vagas reais parecem aparecer em 6. A prioridade do seu estudo fica distorcida.
+**Problem 1 — Duplicate jobs:**
+The same job posting can appear on RemoteOK and Remotive in the same week. Without deduplication, the knowledge base stores it twice. The gap analysis then counts that job as two separate instances of demand for its required skills. A skill that appears in 3 real jobs looks like it appears in 6. Study priorities get distorted — you'd optimize for skills that seem high-demand but aren't.
 
-**2. Data stale (dados velhos):** O mercado muda. Uma skill muito demandada em outubro pode ter saturado em março. Se o knowledge_base guarda vagas de um ano atrás sem expiração, o relatório semanal mescla tendências antigas com novas, tornando as recomendações genéricas.
+**Problem 2 — Stale data:**
+The job market evolves. A skill heavily demanded in October may be saturated by March. Without expiration, the knowledge base mixes market data from a year ago with current data. The weekly report reflects an average of past and present demand — which is neither past nor present. Recommendations become generic and lag behind the actual market.
 
 ---
 
-## As soluções implementadas
+## Solution 1 — URL-based deduplication
 
-### URL-based deduplication
+Before saving any job to `knowledge_base.json`, the agent checks if the URL already exists. If it does, the job is discarded. Same URL = same posting.
 
-Antes de salvar qualquer vaga no `knowledge_base.json`, o agente verifica se a URL já existe. Se sim, descarta — mesma URL = mesma vaga.
+**Why URL, not title?**
+Job titles vary slightly between sources. "Senior Product Manager" on Himalayas might appear as "Sr. Product Manager" on Remotive for the same job. The URL is unique per posting regardless of how the title is displayed.
 
 ```json
-// Antes (com duplicata):
+// Before deduplication:
 [
-  {"url": "https://remoteok.io/jobs/123", "title": "PM at Acme", ...},
-  {"url": "https://remotive.com/job/456", "title": "PM at Acme", ...},
-  {"url": "https://remoteok.io/jobs/123", "title": "PM at Acme", ...}  // duplicata
+  {"url": "https://remoteok.io/jobs/123", "title": "PM at Acme"},
+  {"url": "https://remotive.com/job/456", "title": "PM at Acme"},
+  {"url": "https://remoteok.io/jobs/123", "title": "PM at Acme"}  ← duplicate
 ]
 
-// Depois (deduplicated):
+// After deduplication (unique_by .url):
 [
-  {"url": "https://remoteok.io/jobs/123", "title": "PM at Acme", ...},
-  {"url": "https://remotive.com/job/456", "title": "PM at Acme", ...}
+  {"url": "https://remoteok.io/jobs/123", "title": "PM at Acme"},
+  {"url": "https://remotive.com/job/456", "title": "PM at Acme"}
 ]
 ```
 
-A deduplicação acontece por URL, não por título — porque títulos podem variar levemente entre fontes mas a URL é única por posting.
+**Where it happens:**
+- The Job Hunter agent deduplicates before appending to `knowledge_base.json`
+- The Weekly CV Optimizer workflow also runs a `jq unique_by(.url)` pass as a safety net before the gap analysis step
 
-### 90-day TTL (Time To Live)
+---
 
-Toda vaga tem um campo `found_at` com o timestamp de quando foi encontrada. Em cada execução do Weekly CV Optimizer, o agente remove todas as entradas com `found_at` anterior a 90 dias:
+## Solution 2 — 90-day TTL (Time To Live)
+
+Every job entry has a `found_at` timestamp. On each run of the Weekly CV Optimizer, entries older than 90 days are removed:
 
 ```bash
-# Dentro do workflow:
 CUTOFF=$(date -d '90 days ago' +%Y-%m-%dT%H:%M:%S)
 jq --arg cutoff "$CUTOFF" \
   '[.[] | select(.found_at >= $cutoff)] | unique_by(.url)' \
   data/knowledge_base.json > /tmp/kb_clean.json
+mv /tmp/kb_clean.json data/knowledge_base.json
 ```
 
-**Por que 90 dias?**  
-- 30 dias seria muito curto — não captura ciclos mensais de contratação
-- 6 meses seria muito longo — o mercado muda significativamente em 6 meses
-- 90 dias = um trimestre = tempo suficiente para identificar tendências sem incluir dados obsoletos
+**Why 90 days specifically?**
+- 30 days is too short — misses monthly hiring cycles and creates noise from week-to-week variation
+- 180 days is too long — market signals from 6 months ago can actively mislead current strategy
+- 90 days = one quarter = enough history to identify real trends without mixing in outdated market conditions
 
 ---
 
-## Weekly KB Slices
+## Weekly KB slices
 
-Além do `knowledge_base.json` (visão completa, 90 dias), o sistema mantém arquivos semanais: `data/kb_YYYY-WNN.json`.
+In addition to the full `knowledge_base.json` (rolling 90 days), the system maintains weekly snapshot files: `data/kb_YYYY-WNN.json`.
 
-**Por que existem?**
-
-O gap_report precisa responder: "essa skill ficou mais demandada essa semana em relação à semana passada?"
-
-Para responder isso com dados reais, você precisa de dois snapshots separados:
-- `kb_2026-W23.json` — vagas encontradas na semana atual
-- `kb_2026-W22.json` — vagas encontradas na semana anterior
-
-```
-Semana passada: "Python" apareceu em 4 vagas
-Essa semana:    "Python" apareceu em 7 vagas
-Resultado:      "↑ Python 4→7 jobs (+75%)"
-```
-
-Sem os slices semanais, você teria que varrer o `knowledge_base.json` inteiro e tentar separar por data — mais lento, mais complexo, e sujeito a erros nas bordas temporais.
-
-### Naming convention
-
-`kb_YYYY-WNN.json` — onde:
-- `YYYY` = ano com 4 dígitos
+**Naming convention:**
+- `YYYY` = 4-digit year
 - `W` = literal "W"
-- `NN` = número da semana ISO (01-53), com zero à esquerda
+- `NN` = ISO week number with leading zero (01–53)
+- Example: `kb_2026-W23.json`, `kb_2026-W22.json`
 
-Exemplos: `kb_2026-W22.json`, `kb_2026-W23.json`
+**Why they exist:**
+The gap analysis needs to answer: "Did demand for this skill increase compared to last week?" To answer that with real numbers, you need two isolated weekly datasets. You cannot reliably reconstruct weekly buckets from the full knowledge base after the fact, because a job found Monday gets added to the same KB as a job found Friday.
 
-O Weekly Report sempre carrega os **2 arquivos mais recentes** para calcular tendências:
+The slices provide clean, pre-partitioned weekly views:
 
-```python
-# Lógica do weekly-report.md:
+```
+Last week:  "Python" appeared in 4 jobs  (from kb_2026-W22.json)
+This week:  "Python" appeared in 7 jobs  (from kb_2026-W23.json)
+Report:     "↑ Python 4→7 jobs (+75%)"
+```
+
+Without slices, the best you could do is: "↑ Python" — directional but not quantified.
+
+**How they're used:**
+The Weekly Report always loads the **2 most recent** KB slices:
+```
 1. glob data/kb_*.json
-2. sort descending por nome (= descending por data)
-3. pegar os 2 primeiros
-4. comparar contagens de keywords entre eles
+2. sort descending (newest first)
+3. take first 2 files
+4. compare keyword frequency between them
 ```
 
 ---
 
-## Estrutura de um job entry
+## Job entry structure
 
-Cada entrada no `knowledge_base.json` segue esta estrutura:
+Every entry in `knowledge_base.json` follows this schema:
 
 ```json
 {
   "title": "Senior Product Manager",
   "company": "Acme Corp",
-  "url": "https://himalayas.app/jobs/123",
+  "url": "https://himalayas.app/jobs/123456",
   "source": "himalayas",
   "location_type": "remote_worldwide",
-  "salary_range": "$90k-$120k",
+  "salary_range": "$90k–$120k",
   "fit_score": 8,
   "key_requirements": [
     "5+ years product management",
@@ -118,36 +118,38 @@ Cada entrada no `knowledge_base.json` segue esta estrutura:
 }
 ```
 
-O `fit_score` (1-10) é calculado pelo Job Hunter baseado em:
-- Match de título com os `target_roles` do config.json
-- Overlap de skills entre os `key_requirements` e o cv.md
-- Conformidade com as regras de localização
-- Salary range vs target salary
+The `fit_score` (1–10) is calculated by the Job Hunter based on:
+- **Role match** — how closely the title aligns with `target_roles` in `config.json`
+- **Skills overlap** — how many `key_requirements` match experience in `data/cv.md`
+- **Location compliance** — whether it passes the hard filter rules
+- **Salary alignment** — whether the range overlaps with the target in `config.json`
 
 ---
 
-## Impacto no gap analysis
+## Impact on gap analysis quality
 
-Com dados limpos, o gap analysis torna-se confiável:
+Data hygiene is what makes the gap analysis trustworthy rather than directionally correct:
 
 ```
-Gap Report (com dados sujos):
-  ❌ "Python" — aparece em 12 vagas ← na verdade eram 6 vagas duplicadas
+Gap report without hygiene:
+  ❌ "Python" — appears in 12 jobs  ← actually 6 jobs, each counted twice
 
-Gap Report (com dedup + TTL):
-  ❌ "Python" — aparece em 6 vagas ← número real, relevante, atual
+Gap report with dedup + TTL:
+  ❌ "Python" — appears in 6 jobs   ← accurate, current, actionable
 ```
 
-A ordem de prioridade do estudo — o que você deveria aprender primeiro — depende inteiramente da frequência com que cada skill aparece. Dados sujos inverte prioridades.
+Study list priority is entirely driven by frequency. If frequency numbers are wrong, you optimize for the wrong skills. Clean data = correct priorities = better outcomes.
 
 ---
 
-## Evolução futura
+## When to scale beyond JSON files
 
-Quando o volume crescer (100+ vagas/semana), considerar:
-- **PostgreSQL ou SQLite** como storage ao invés de JSON flat files
-- **Índice por URL** para dedup em O(1) ao invés de full scan
-- **Índice por `found_at`** para TTL sem varrer o array inteiro
-- **Análise de salário** — distribuição de salary ranges por role/stack
+The current storage approach (flat JSON files in the repo) works well for this volume. Consider migrating to a database when:
 
-Por enquanto, JSON flat files no repo são suficientes — simples, sem infra, auditáveis via git diff.
+- `knowledge_base.json` exceeds ~10 MB (roughly 5,000+ job entries)
+- Gap analysis runs start taking more than 30 seconds
+- You want to query across multiple dimensions simultaneously (e.g., salary range by role by source)
+
+At that point, SQLite (still local, no infra) or a hosted Postgres would be the right move. The agent code in the command files would need minimal changes — swap `jq` operations for SQL queries.
+
+For the current scale of 10–30 new jobs per day, JSON files with git as storage are simple, portable, and fully auditable.

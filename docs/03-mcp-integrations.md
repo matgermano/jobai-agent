@@ -1,131 +1,141 @@
 # MCP — Model Context Protocol
 
-## O que é MCP
+## What MCP is
 
-MCP (Model Context Protocol) é o protocolo que permite que o Claude opere sistemas externos como se fossem ferramentas nativas. Com MCP, o Claude não apenas fala sobre o Notion — ele abre páginas, cria databases, atualiza propriedades. Não apenas descreve emails — ele os envia.
+MCP (Model Context Protocol) is the protocol that lets Claude operate external systems as if they were native tools. With MCP, Claude doesn't just describe how to update Notion — it calls `notion.update_page()` and the page updates. It doesn't just describe how to send an email — it calls `gmail.send_email()` and the email is sent.
 
-**Analogia:** APIs tradicionais são como dar ao Claude um manual e pedir pra ele descrever como fazer algo. MCP é como dar ao Claude as mãos para fazer ele mesmo.
-
+**Without MCP:**
 ```
-Sem MCP:  Claude → texto descrevendo como atualizar o Notion
-Com MCP:  Claude → chama notion.update_page() → Notion atualizado
+User: "Update my Kanban card to Done"
+Claude: "Here's how you would update it in Notion: go to the page, click..."
 ```
+
+**With MCP:**
+```
+User: "Update my Kanban card to Done"
+Claude: calls notion-update-page() → card status = Done ✓
+```
+
+MCP turns Claude from a text generator into an agent that acts in the world.
 
 ---
 
-## Como funciona tecnicamente
+## How it works technically
 
-MCP define um protocolo de comunicação entre:
-- **Host** (Claude Code) — o agente que quer usar ferramentas
-- **Server** (Notion, Gmail, GitHub, etc.) — o sistema sendo controlado
+MCP defines a communication protocol between:
+- **Host** (Claude Code) — the agent that wants to use tools
+- **Server** (Notion, Gmail, GitHub, etc.) — the system being controlled
 
-O servidor MCP expõe um conjunto de **tools** com schemas JSON. O Claude chama essas tools exatamente como chama ferramentas nativas (Read, Write, Bash). A diferença é que as ferramentas MCP fazem chamadas a APIs externas.
+The MCP server exposes a set of **tools** with JSON schemas. Claude calls these tools exactly like it calls native tools (Read, Write, Bash). The tools internally make API calls to the external service and return structured results.
 
 ```
-Claude → mcp__notion__notion-update-page({page_id: "...", data: {...}})
-       → Notion API → página atualizada
+Claude → mcp__claude_ai_Notion__notion-update-page({page_id, data})
+       → Notion API
+       → Page updated, confirmation returned to Claude
 ```
+
+The tool names follow the pattern: `mcp__[connector_name]__[tool_name]`
 
 ---
 
-## Como conectar um serviço
+## How to connect a service
 
-### Via claude.ai (recomendado — OAuth, sem chave de API)
+### Via claude.ai connectors (recommended — OAuth, no API key required)
 
-1. Ir em `claude.ai/customize/connectors`
-2. Buscar o conector desejado (Notion, Gmail, GitHub, Slack, etc.)
-3. Autorizar via OAuth — o Claude nunca vê sua senha
-4. O conector fica disponível automaticamente em todas as sessões Claude Code locais e nas Routines
+1. Go to `claude.ai/customize/connectors`
+2. Find the connector (Notion, Gmail, GitHub, Slack, Linear, etc.)
+3. Authorize via OAuth — Claude receives a temporary access token, never your password
+4. The connector becomes automatically available in all Claude Code local sessions and in Routines
 
-### Via MCP Server manual (para serviços customizados)
+### Via manual MCP server (for custom or unsupported services)
 
-Para serviços que não têm conector oficial, você pode criar um MCP server próprio e configurá-lo no `settings.json`. Esse path é para casos avançados — para a maioria dos serviços populares, os conectores do claude.ai já existem.
+For services without an official connector, you can build a custom MCP server and register it in `.claude/settings.json`. This is an advanced path — for most common services, the claude.ai connectors already exist.
 
 ---
 
-## Conectores ativos no jobAI
+## Active integrations in jobAI
 
-### Notion (cf2d86aa-dc6e-46ab-95cf-1de1ab3020c9)
+### Notion
+**Connector UUID:** `cf2d86aa-dc6e-46ab-95cf-1de1ab3020c9`
+**Connected via:** claude.ai OAuth
+**Used for:** Kanban board management via `/updatekanban` command
 
-**Usado para:** Kanban board de roadmap (`/updatekanban`)
+**Available tools:**
+- `notion-search` — finds pages and databases by text query
+- `notion-fetch` — reads the full content of a page
+- `notion-update-page` — updates page properties (e.g., Status field)
+- `notion-create-pages` — creates new pages
+- `notion-create-database` — creates new databases
+- `notion-get-comments` / `notion-create-comment` — reads and adds comments
 
-**Ferramentas disponíveis:**
-- `notion-search` — busca páginas/databases por texto
-- `notion-fetch` — lê o conteúdo de uma página
-- `notion-update-page` — atualiza propriedades de uma página (ex: mudar Status de "Doing" para "Done")
-- `notion-create-pages` — cria novas páginas
-- `notion-create-database` — cria databases
-- `notion-get-comments` / `notion-create-comment` — comentários em páginas
-
-**Como o agente usa:**
+**How the `/updatekanban` command uses it:**
 ```
 /updatekanban "Card 1.4" Done
-→ Claude chama notion-search("Card 1.4" no database "jobAI Roadmap")
-→ Encontra o page_id
-→ Chama notion-update-page com Status = "Done"
-→ Confirma a mudança
+
+→ Claude calls notion-search("Card 1.4") in the "jobAI Roadmap" database
+→ Gets the page_id from the result
+→ Calls notion-update-page(page_id, {Status: "Done"})
+→ Confirms the update
 ```
 
-**Para que a Routine acesse o Notion:** O `connector_uuid` do Notion precisa estar no campo `mcp_connections` da Routine. Está configurado em todas as 3 Routines do jobAI.
-
-### Gmail (conectado via claude.ai)
-
-**Usado para:** Alertas de vagas com fit_score ≥ 9
-
-**Como funciona no hunt-jobs:**
-```
-Após scoring, se alguma vaga tiver fit_score >= 9:
-→ Claude chama gmail.send_email()
-→ Para: email configurado no config.json
-→ Assunto: "jobAI Alert: [Título da Vaga] at [Empresa] — Score 9/10"
-→ Corpo: título, empresa, URL, fit_score, principais requirements
-```
-
-**Por que email e não Notion?**  
-O relatório semanal chega segunda de manhã. Uma vaga 9/10 não pode esperar — ela fica aberta por poucos dias. O email garante que você seja notificado imediatamente, sem precisar checar manualmente.
+**How Routines access Notion:** The `connector_uuid` is listed in the `mcp_connections` field of each Routine config. All three jobAI routines have Notion connected, even if they don't always use it — it's available if needed.
 
 ---
 
-## Roadmap de integrações MCP
+### Gmail
+**Connected via:** claude.ai OAuth
+**Used for:** Immediate email alerts when a job scores ≥ 9/10
 
-### Próximas (Fase 2-3 do roadmap)
+**How it's triggered in hunt-jobs.md:**
+```
+After scoring all jobs:
+If any job has fit_score >= 9:
+  → Send email to the address in config.json
+  → Subject: "jobAI Alert: [Job Title] at [Company] — Score [X]/10"
+  → Body: title, company, URL, fit_score, key requirements, found_at
+```
 
-**LinkedIn** (via Chrome MCP):  
-- Ler seu perfil atual e comparar com keywords do gap_report
-- Sugerir melhorias de headline, about, e experiências
-- Requer o plugin "Claude in Chrome" (extensão beta)
+**Why email instead of waiting for the Monday report:**
+A 9/10 job may close within 24-48 hours. The weekly report arrives Monday morning — that's too late if the job was posted Thursday. The Gmail alert ensures immediate notification for top-scoring matches.
 
-**Chrome MCP** (browser automation):  
-- Preencher formulários de ATS (Greenhouse, Lever, Ashby) automaticamente
-- O agente opera o browser como um humano — mais poderoso e mais arriscado
-- Você sempre revisa antes de submeter
-
-### Como adicionar um novo conector
-
-1. Verificar se existe em `claude.ai/customize/connectors`
-2. Conectar via OAuth
-3. Se precisar em Routines: pegar o `connector_uuid` do conector
-4. Atualizar a Routine via `/schedule` (update) para adicionar o conector
+**Note on Gmail in Routines:** Gmail MCP is available in the Daily Job Hunter routine because it's connected at the claude.ai level. The routine's prompt instructs the agent to use it conditionally — only when a high-fit job is found.
 
 ---
 
-## Modelo de permissão e segurança
+## Permission model and security
 
-**OAuth vs API key:**  
-Conectores via claude.ai usam OAuth — o Claude recebe um token de acesso temporário, nunca sua senha. Quando você revoga o conector, o acesso é imediatamente encerrado.
+**OAuth tokens:** When you connect a service via claude.ai, it uses OAuth. Claude receives a scoped access token — it never sees your password. Revoking the connector in claude.ai immediately invalidates the token.
 
-**Ferramentas permitidas:**  
-Cada Routine pode especificar `permitted_tools` para um conector MCP. Deixar vazio (`[]`) significa que todas as ferramentas do conector ficam disponíveis. Para ambientes de produção, é boa prática restringir — ex: o Weekly Report pode ler o Notion mas não precisa criar páginas.
+**`permitted_tools` per routine:** Each `mcp_connection` in a Routine can specify `permitted_tools` to limit which MCP tools the agent can call. Leaving it empty (`[]`) means all tools for that connector are available. For production hardening, you can restrict — e.g., the Weekly Report can read Notion but doesn't need to create pages.
 
-**Princípio do mínimo privilégio:**  
-Conecte apenas os serviços que o agente realmente precisa. Um agente de análise de CV não precisa de acesso ao Gmail. Um agente de notificação por email não precisa de acesso ao Notion.
+**Principle of least privilege:** Connect only what the agent actually needs. An agent doing CV analysis doesn't need Gmail access. An agent sending notifications doesn't need Notion access.
 
 ---
 
-## Por que MCP importa no contexto de IA
+## MCP integration roadmap for jobAI
 
-Antes do MCP, integrar LLMs com sistemas externos era um trabalho de engenharia pesado — você precisava construir wrappers, gerenciar auth, escrever código de serialização. Cada integração era custom.
+### Phase 2 — LinkedIn analysis
+Compare your LinkedIn headline, about section, and experience bullets against the top keywords from `gap_report.md`. Suggest specific copy improvements.
+- **Requires:** LinkedIn MCP connector (check `claude.ai/customize/connectors` for availability)
 
-MCP padroniza esse processo. Um servidor MCP bem construído pode ser usado por qualquer cliente compatível (Claude Code, outros hosts). É similar ao que o HTTP fez para a web — um protocolo padrão que desacoplou clientes de servidores.
+### Phase 3 — Chrome MCP (browser automation)
+The agent opens a browser, navigates to an ATS job application (Greenhouse, Lever, Ashby), reads `application_profile.json`, and fills in all form fields. Pauses before submitting for your review.
+- **Requires:** "Claude in Chrome" browser extension (currently in beta)
+- **Risk level:** High — browser automation can trigger bot detection. Always review before submitting.
 
-Para um Product Manager ou AI Builder, entender MCP é entender como construir agentes que realmente operam o mundo — não só geram texto. A diferença entre um chatbot e um agente autônomo está, em grande parte, nos MCPs que ele tem disponíveis.
+### How to add a new connector to an existing Routine
+
+1. Connect the service at `claude.ai/customize/connectors`
+2. Note the `connector_uuid` from the connectors page
+3. In Claude Code, run `/schedule` → update the target routine → add the connector
+4. The update takes effect on the next scheduled run
+
+---
+
+## Why MCP matters beyond this project
+
+Before MCP, integrating LLMs with external systems required building custom wrappers for each service — managing auth flows, serialization, error handling, rate limits. Each integration was one-off engineering work.
+
+MCP standardizes this. A well-built MCP server can be used by any compatible host. It's the same conceptual shift that HTTP made for the web — a standard protocol that decoupled clients from servers, enabling a market of interoperable tools.
+
+For a Product Manager or AI Builder, understanding MCP is understanding how agents cross the boundary from "generates text about the world" to "acts in the world." The difference between a chatbot and an autonomous agent is largely in what MCP connections it has available.
