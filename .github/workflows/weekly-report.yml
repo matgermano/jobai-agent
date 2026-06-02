@@ -1,0 +1,63 @@
+name: Weekly Report
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # 9:00 AM UTC = 6:00 AM BRT (Monday)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Skip git commit and push (debug mode)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  weekly-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@2.1.150
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run weekly-report
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CLAUDE_MODEL: claude-haiku-4-5-20251001
+          CLAUDE_SMALL_MODEL: claude-haiku-4-5-20251001
+          ENABLE_PROMPT_CACHING_1H: true
+        run: |
+          claude -p "$(cat .claude/commands/weekly-report.md)" \
+            --model claude-haiku-4-5-20251001 \
+            --allowedTools "Read,Write,Bash(git add:git commit:git push)" \
+            --max-turns 20
+
+      - name: Verify output was created
+        run: |
+          if [ ! -f "outputs/weekly_report.md" ]; then
+            echo "::error::outputs/weekly_report.md was not created — Claude run may have failed."
+            exit 1
+          fi
+          echo "Output verified: outputs/weekly_report.md"
+
+      - name: Commit and push results
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git add outputs/weekly_report.md
+          git diff --staged --quiet || git commit -m "feat(report): $(date +%Y-%m-%d) · weekly report generated"
+          git push origin main

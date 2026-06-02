@@ -1,0 +1,74 @@
+name: Daily Job Hunter
+
+on:
+  schedule:
+    - cron: '0 10 * * *'  # 10:00 AM UTC = 7:00 AM BRT
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Skip git commit and push (debug mode)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  hunt-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@2.1.150
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deduplicate knowledge base
+        run: |
+          if [ -f "data/knowledge_base.json" ]; then
+            jq 'unique_by(.url)' data/knowledge_base.json > /tmp/kb_deduped.json
+            mv /tmp/kb_deduped.json data/knowledge_base.json
+            echo "Knowledge base deduplicated."
+          fi
+
+      - name: Run hunt-jobs
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CLAUDE_MODEL: claude-haiku-4-5-20251001
+          CLAUDE_SMALL_MODEL: claude-haiku-4-5-20251001
+          ENABLE_PROMPT_CACHING_1H: true
+        run: |
+          claude -p "$(cat .claude/commands/hunt-jobs.md)" \
+            --model claude-haiku-4-5-20251001 \
+            --allowedTools "Read,Write,WebSearch,WebFetch,Bash(git add:git commit:git push)" \
+            --max-turns 20
+
+      - name: Verify output was created
+        run: |
+          OUTPUT_FILE="outputs/jobs_$(date +%Y-%m-%d).json"
+          if [ ! -f "$OUTPUT_FILE" ]; then
+            echo "::error::Expected output $OUTPUT_FILE was not created — Claude run may have failed."
+            exit 1
+          fi
+          echo "Output verified: $OUTPUT_FILE"
+
+      - name: Commit and push results
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          OUTPUT_FILE="outputs/jobs_$(date +%Y-%m-%d).json"
+          JOB_COUNT=$(jq 'length' "$OUTPUT_FILE" 2>/dev/null || echo "0")
+          git add outputs/ data/knowledge_base.json data/
+          git diff --staged --quiet || git commit -m "feat(hunt): $(date +%Y-%m-%d) · ${JOB_COUNT} jobs found · job-hunter"
+          git push origin main

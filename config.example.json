@@ -1,0 +1,116 @@
+{
+  "_comment": "Example config — replace values with your own profile before using.",
+  "profile": {
+    "name": "Alex Rivera",
+    "location": "São Paulo, Brazil",
+    "timezone": "America/Sao_Paulo",
+    "email": "alex.rivera@email.com",
+    "linkedin": "https://linkedin.com/in/alexrivera-pm"
+  },
+  "search": {
+    "target_roles": [
+      "Product Manager",
+      "Senior Product Manager",
+      "Mid-Level Product Manager",
+      "Principal Product Manager",
+      "Group Project Manager",
+      "Head of Product",
+      "Product Lead",
+      "AI Builder",
+      "AI Engineer",
+      "Automation Specialist",
+      "Process Transformation Specialist",
+      "Solutions Engineer"
+    ],
+    "apply_priority_roles": [
+      "Product Manager",
+      "Senior Product Manager",
+      "Mid-Level Product Manager",
+      "Principal Product Manager",
+      "Group Project Manager",
+      "AI Builder",
+      "AI Engineer",
+      "Automation Specialist",
+      "Process Transformation Specialist",
+      "Solutions Engineer"
+    ],
+    "monitor_only_roles": [
+      "Head of Product",
+      "Product Lead"
+    ],
+    "salary_min_usd": 80000,
+    "salary_max_usd": 110000,
+    "seniority": "any",
+    "industries": "all",
+    "location_rules": {
+      "accept": [
+        "remote worldwide",
+        "remote latam",
+        "remote americas",
+        "remote global",
+        "no location restriction"
+      ],
+      "reject": [
+        "us only",
+        "us citizens only",
+        "eu only",
+        "europe only",
+        "requires relocation",
+        "on-site",
+        "hybrid",
+        "must be based in"
+      ]
+    },
+    "sources": [
+      "remoteok",
+      "remotive",
+      "himalayas",
+      "wellfound"
+    ],
+    "sources_roadmap": [
+      "weworkremotely",
+      "remoterocketship",
+      "jobnagringa",
+      "turing",
+      "contra",
+      "linkedin"
+    ],
+    "min_fit_score": 5
+  },
+  "routines": {
+    "job_hunter": {
+      "frequency": "daily",
+      "time": "07:00",
+      "timezone": "America/Sao_Paulo",
+      "command": "/hunt-jobs"
+    },
+    "cv_optimizer": {
+      "frequency": "weekly",
+      "day": "sunday",
+      "time": "20:00",
+      "timezone": "America/Sao_Paulo",
+      "commands": ["/analyze-gaps", "/optimize-cv"]
+    },
+    "weekly_report": {
+      "frequency": "weekly",
+      "day": "monday",
+      "time": "06:00",
+      "timezone": "America/Sao_Paulo",
+      "command": "/weekly-report"
+    }
+  },
+  "cv_optimizer_rules": {
+    "rewrite_only": true,
+    "never_invent_experience": true,
+    "preserve_metrics": true,
+    "preserve_dates": true,
+    "preserve_company_names": true,
+    "preserve_job_titles": true,
+    "max_cv_versions_to_keep": 10
+  },
+  "output": {
+    "auto_git_commit": true,
+    "commit_message_format": "feat(hunt): {date} · {jobs_found} jobs found · job-hunter",
+    "auto_git_push": true
+  }
+}

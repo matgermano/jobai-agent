@@ -1,0 +1,177 @@
+{
+  "_comment": "Example application profile — replace all values with your own data before using.",
+
+  "personal": {
+    "full_name": "Alex Rivera",
+    "preferred_name": "Alex Rivera",
+    "email": "alex.rivera@email.com",
+    "phone": "+55 11 91234-5678",
+    "location": "São Paulo, Brazil",
+    "timezone": "America/Sao_Paulo (UTC-3)",
+    "linkedin": "https://linkedin.com/in/alexrivera-pm",
+    "portfolio": "https://alexrivera.notion.site",
+    "github": "https://github.com/alexrivera",
+    "work_authorization": "Brazilian citizen — available for remote roles worldwide, no US/EU work authorization",
+    "willing_to_relocate": false,
+    "remote_only": true,
+    "pronouns": "he/him"
+  },
+
+  "preferences": {
+    "salary_min_usd_monthly": 6000,
+    "salary_min_usd_annual": 70000,
+    "salary_target_usd_annual": "80000-110000",
+    "contract_types": ["full-time", "contract", "PJ"],
+    "work_model": "remote only",
+    "english_level": "Full Professional",
+    "spanish_level": "Elementary",
+    "portuguese_level": "Native"
+  },
+
+  "target_roles": {
+    "primary": [
+      "Product Manager",
+      "Senior Product Manager",
+      "Group Product Manager"
+    ],
+    "secondary": [
+      "AI Product Manager",
+      "AI Builder",
+      "AI Engineer",
+      "Automation Specialist",
+      "Process Transformation Specialist",
+      "Solutions Engineer",
+      "Technical Product Manager"
+    ],
+    "open_to": [
+      "Process improvement and AI transformation roles where I can build agentic automations"
+    ]
+  },
+
+  "experience": [
+    {
+      "company": "Nexus Technology Solutions",
+      "title": "Group Product Manager",
+      "start": "2025-01",
+      "end": "present",
+      "location": "Brazil",
+      "context": "Enterprise technology consulting for large utility client",
+      "highlights": [
+        "Lead 2 strategic projects acting as central point across business, technology, delivery, finance, and vendors",
+        "Manage innovation initiative on GIS modernization and integrations",
+        "Generated significant cross-sell opportunities",
+        "Led delivery of construction management product with US partner",
+        "Bridged business, tech, vendor execution, and finance governance"
+      ]
+    },
+    {
+      "company": "Meridian Software Group",
+      "title": "Senior Product Manager",
+      "start": "2024-01",
+      "end": "2025-01",
+      "location": "Remote",
+      "context": "SaaS platform for end-to-end logistics operations (TMS, WMS, finance, HR)",
+      "highlights": [
+        "Led integration of AI and automation for inventory tracking and onboarding, reducing manual work by 40%",
+        "Built product culture from scratch: Agile ceremonies, Jira, GitHub, backlog prioritization — reduced time-to-market by 35%",
+        "Increased platform adoption by 30% through UX and C-level alignment",
+        "Improved system stability by 70% and customer satisfaction by 25%",
+        "Partnered directly with CEOs to define roadmap and long-term vision"
+      ]
+    },
+    {
+      "company": "Atlas Telecom",
+      "title": "Senior Product Manager",
+      "start": "2023-01",
+      "end": "2024-01",
+      "location": "Brazil",
+      "context": "Large telecom operator, 60M+ customers",
+      "highlights": [
+        "Led development of AI-powered voice analytics system",
+        "Drove 18M+ app leads through customer acquisition initiatives",
+        "Accelerated chatbot leads by 350% within first three months",
+        "Led PIX payment pilot projected to raise CSAT from 30% to 70%+",
+        "Pioneered digital channel achieving R$1M+ in cost savings"
+      ]
+    },
+    {
+      "company": "Bridgepoint Technologies",
+      "title": "Technical Product Manager",
+      "start": "2021-01",
+      "end": "2023-01",
+      "location": "Remote",
+      "context": "API Management and DevOps platform",
+      "highlights": [
+        "Managed 3 squads to build and deploy an API accelerator platform",
+        "Established product division that increased time-to-market speed by 50%",
+        "Launched B2B software license sales, securing portfolio in 3 months",
+        "Streamlined API workflows, reducing delivery time by 30%+"
+      ]
+    },
+    {
+      "company": "Vector Commerce",
+      "title": "Junior Product Manager",
+      "start": "2020-06",
+      "end": "2021-01",
+      "location": "Remote",
+      "context": "Transparency dashboard for NGOs",
+      "highlights": [
+        "Led multidisciplinary team to develop dashboard impacting 8 NGOs",
+        "45% increase in user adoption in first six months",
+        "30% boost in donor retention through real-time impact tracking",
+        "20% improvement in engagement via A/B testing and discovery"
+      ]
+    },
+    {
+      "company": "Primero Auto Services",
+      "title": "Software Developer",
+      "start": "2020-01",
+      "end": "2021-01",
+      "location": "Remote",
+      "context": "Car rental platform",
+      "highlights": [
+        "Developed platform using JavaScript and PHP",
+        "Increased contract renewals by 25% via analytics integration",
+        "15% reduction in support tickets through new features"
+      ]
+    }
+  ],
+
+  "skills": {
+    "product": ["Product Strategy", "Roadmapping", "Discovery", "Backlog Prioritization", "Stakeholder Management", "KPI Tracking", "Data-Informed Decisions"],
+    "ai_automation": ["Claude Code", "Agentic Automation", "AI Product Integration", "Process Automation", "GitHub Actions", "MCP"],
+    "technical": ["APIs", "SaaS", "JavaScript", "PHP", "MySQL", "Software Development background"],
+    "tools": ["Jira", "Azure DevOps", "Figma", "Miro", "Notion", "GitHub"],
+    "methodologies": ["Agile", "Scrum", "Kanban"]
+  },
+
+  "education": [
+    {
+      "institution": "State University",
+      "degree": "Bachelor in Public Administration",
+      "start": "2014-09",
+      "end": "2020-01"
+    },
+    {
+      "institution": "PM Bootcamp",
+      "degree": "Product Management",
+      "start": "2022-01",
+      "end": "2022-12"
+    },
+    {
+      "institution": "Dev Academy",
+      "degree": "Web Full Stack Development",
+      "start": "2021-01",
+      "end": "2021-12"
+    }
+  ],
+
+  "common_form_answers": {
+    "why_remote": "I've worked remotely across most of my career, leading distributed teams and C-level stakeholders across time zones. I'm fully set up and productive in remote-first environments.",
+    "notice_period": "Available with standard notice — flexible to align with the team's needs.",
+    "salary_expectation": "Targeting $80k-$110k USD annually, open to discussing based on the full scope and growth opportunity.",
+    "years_of_experience": "6+ years in product management plus prior software development experience.",
+    "visa_sponsorship_needed": "No sponsorship needed — I work as a remote contractor/employee from Brazil.",
+    "pronouns": "he/him"
+  }
+}

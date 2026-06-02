@@ -1,0 +1,134 @@
+name: Weekly CV Optimizer
+
+on:
+  schedule:
+    - cron: '0 23 * * 0'  # 11:00 PM UTC = 8:00 PM BRT (Sunday)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Skip git commit and push (debug mode)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  analyze-gaps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@2.1.150
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Prune knowledge base (keep last 90 days)
+        run: |
+          if [ -f "data/knowledge_base.json" ]; then
+            CUTOFF=$(date -d '90 days ago' +%Y-%m-%dT%H:%M:%S)
+            jq --arg cutoff "$CUTOFF" \
+              '[.[] | select(.found_at >= $cutoff)] | unique_by(.url)' \
+              data/knowledge_base.json > /tmp/kb_clean.json
+            mv /tmp/kb_clean.json data/knowledge_base.json
+            echo "Knowledge base pruned (TTL: 90 days) and deduplicated."
+          fi
+
+      - name: Run analyze-gaps
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CLAUDE_MODEL: claude-haiku-4-5-20251001
+          CLAUDE_SMALL_MODEL: claude-haiku-4-5-20251001
+          ENABLE_PROMPT_CACHING_1H: true
+        run: |
+          claude -p "$(cat .claude/commands/analyze-gaps.md)" \
+            --model claude-haiku-4-5-20251001 \
+            --allowedTools "Read,Write,Bash(git add:git commit:git push)" \
+            --max-turns 20
+
+      - name: Verify gap report was created
+        run: |
+          if [ ! -f "outputs/gap_report.md" ]; then
+            echo "::error::outputs/gap_report.md was not created — Claude run may have failed."
+            exit 1
+          fi
+          echo "Output verified: outputs/gap_report.md"
+
+      - name: Upload gap report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gap-report
+          path: outputs/gap_report.md
+          retention-days: 1
+
+      - name: Commit and push gap report
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git add outputs/gap_report.md data/knowledge_base.json
+          git diff --staged --quiet || git commit -m "feat(analysis): $(date +%Y-%m-%d) · gap analysis complete · cv-analyzer"
+          git push origin main
+
+  optimize-cv:
+    runs-on: ubuntu-latest
+    needs: analyze-gaps
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@2.1.150
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Download gap report artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gap-report
+          path: outputs/
+
+      - name: Run optimize-cv
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CLAUDE_MODEL: claude-haiku-4-5-20251001
+          CLAUDE_SMALL_MODEL: claude-haiku-4-5-20251001
+          ENABLE_PROMPT_CACHING_1H: true
+        run: |
+          claude -p "$(cat .claude/commands/optimize-cv.md)" \
+            --model claude-haiku-4-5-20251001 \
+            --allowedTools "Read,Write,Bash(git add:git commit:git push:ls)" \
+            --max-turns 20
+
+      - name: Verify CV output was created
+        run: |
+          if ! ls outputs/cv_v*.md 1>/dev/null 2>&1; then
+            echo "::error::No cv_v*.md found in outputs/ — Claude run may have failed."
+            exit 1
+          fi
+          echo "Output verified: $(ls outputs/cv_v*.md | tail -1)"
+
+      - name: Commit and push CV output
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git add outputs/
+          git diff --staged --quiet || git commit -m "feat(cv): $(date +%Y-%m-%d) · cv-optimizer weekly run"
+          git push origin main
