@@ -23,6 +23,11 @@
 
 **~92% reduction in manual job search effort.**
 
+| Application package | ATS form-filling | Application tracking |
+|---|---|---|
+| Manual: 2–3h research + writing | Manual: copy-paste 30+ fields | Manual: spreadsheet maintenance |
+| jobAI: `/apply-prep [URL]` → ready in 5min | jobAI: `/apply-ats [URL]` → Playwright auto-fills | jobAI: `/log-application [URL]` → KB + Notion |
+
 ---
 
 ## What's live today
@@ -40,6 +45,9 @@
 | Data-driven trend tracking (↑ 4→8 jobs, not just arrows) | ✅ Live |
 | Monday morning digest report | ✅ Live |
 | Notion Kanban — roadmap tracked via MCP | ✅ Live |
+| Full application package per job — CV + briefing + Q&A + STAR stories | ✅ Live |
+| ATS form-filler — Playwright (Windows) / Chrome MCP (macOS) | ✅ Live |
+| Application tracker — logs to KB + Notion Applications database | ✅ Live |
 | Full git history of every run as audit trail | ✅ Live |
 
 ---
@@ -117,8 +125,8 @@ All outputs are plain markdown and JSON — no database, no server, no infrastru
 |---|---|---|
 | Phase 0 | Foundation — Routines, profile, Obsidian, two-repo strategy, security | ✅ Done |
 | Phase 1 | Smart discovery — role expansion, dedup+TTL, trend tracking, email alerts | ✅ Done |
-| Phase 2 | Positioning — CV per job, LinkedIn analysis, interest alignment | ⬜ Next |
-| Phase 3 | Assisted application — Chrome MCP, ATS form-filling, application tracker | ⬜ Backlog |
+| Phase 2 | Positioning — CV per job, LinkedIn optimizer, interest alignment | ✅ Done |
+| Phase 3 | Assisted application — apply-prep, ATS form-filling, application tracker | ✅ Done |
 | Phase 4 | Specialization — custom Skills, Cowork, interview prep | ⬜ Backlog |
 | Phase 5 | Mastery — multi-agent orchestration, publishable case study | ⬜ Backlog |
 
