@@ -13,6 +13,7 @@ Generate a concise Monday morning report. Give Alex a clear picture of what happ
 - Read `outputs/gap_report.md` — latest gap analysis
 - Read `outputs/cv_changelog.md` — latest CV changes
 - Read `outputs/cv_v[latest].md` — current CV version (find highest N in outputs/)
+- Read `outputs/linkedin_suggestions.md` — latest LinkedIn suggestions (if exists, generated this week)
 
 ### 2. Calculate stats
 - Total jobs found this week
@@ -92,11 +93,21 @@ Ranked by market demand:
 
 ---
 
+## 🔗 LinkedIn — suggested updates this week
+_If outputs/linkedin_suggestions.md exists and was generated this week:_
+- **Headline:** [one of the headline variants from the file — the most keyword-rich one]
+- **Key changes:** [1-2 sentence summary of what was improved and why]
+- **Action:** Review `outputs/linkedin_suggestions.md` and apply changes you agree with
+
+_If not generated yet: skip this section_
+
+---
+
 ## 💡 One insight this week
 [One observation about the market based on data — a trend, a pattern, a shift in what companies are asking for]
 
 ---
-_Next run: Tuesday 07:00 BRT · CV update: next Sunday 20:00 BRT_
+_Next run: Tuesday 07:00 BRT · CV update + LinkedIn suggestions: next Sunday 20:00 BRT_
 ```
 
 ### 6. Git commit

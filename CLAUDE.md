@@ -87,8 +87,8 @@ jobAI/
         ├── analyze-gaps.md
         ├── optimize-cv.md
         ├── weekly-report.md
-        ├── cv-by-job.md        ← Phase 2: tailored CV for a specific job URL
-        ├── linkedin-analyzer.md ← Phase 2: LinkedIn profile vs market keywords
+        ├── cv-by-job.md          ← Phase 2: tailored CV for a specific job URL
+        ├── linkedin-optimizer.md ← Phase 2: LinkedIn suggestions from CV + gap report (auto)
         └── updatekanban.md
 ```
 
