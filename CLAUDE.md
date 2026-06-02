@@ -79,7 +79,16 @@ jobAI/
 │   ├── gap_report.md                ← latest gap analysis
 │   ├── cv_v[N].md                   ← versioned CV outputs
 │   ├── cv_changelog.md              ← what changed and why
-│   └── weekly_report.md             ← latest weekly report
+│   ├── weekly_report.md             ← latest weekly report
+│   ├── apply-prep/
+│   │   └── [company-slug]/          ← application packages (auto-generated for 9+ jobs)
+│   │       ├── cv_[slug].md
+│   │       ├── company_briefing.md
+│   │       ├── open_questions.md
+│   │       └── star_stories.md
+│   └── interview-prep/
+│       └── [company-slug]/          ← interview prep documents (manual, per job)
+│           └── interview_prep_YYYY-MM-DD.md
 └── .claude/
     └── commands/
         ├── hunt-jobs.md
@@ -91,7 +100,8 @@ jobAI/
         ├── apply-prep.md         ← Phase 3: full application package (CV + briefing + Q&A + STAR)
         ├── apply-ats.md          ← Phase 3: ATS form-filler via Chrome MCP (requires Chrome MCP)
         ├── log-application.md    ← Phase 3: log application to KB + Notion Applications database
-        └── updatekanban.md
+        ├── updatekanban.md
+        └── interview-prep.md     ← Phase 4: interview prep per job (reuses apply-prep if exists)
 ```
 
 ---
