@@ -106,7 +106,26 @@ Grounded in company research — not generic questions. Each one should signal r
 outputs/interview-prep/[slug]/interview_prep_YYYY-MM-DD.md
 ```
 
-### 7. Git commit
+### 7. Post to Notion
+
+The interview prep content should be accessible directly from the Applications table in Notion — no separate document hunting.
+
+**7a. Find the application row in the Applications database**
+Use `notion-search` to find a page in the Applications database (collection `5d5e12d4-45e0-469f-a74b-508ed2427760`) whose URL matches this job URL, or whose Name contains `@ [Company]`.
+
+**7b-A. If an Applications row is found:**
+Use `notion-update-page` with `command: "replace_content"` to write the full interview prep into that row's page body. The markdown content = everything generated in step 5 (sections A–F), formatted cleanly.
+The application record now IS the prep document — the user clicks the row in Notion and sees the full prep.
+
+**7b-B. If no Applications row is found (job not yet logged):**
+Create a standalone page under the jobAI Command Center hub (parent page ID: `37334228-a20a-8101-8154-d466556de532`).
+Title: `Interview Prep — [Job Title] @ [Company] — YYYY-MM-DD`
+Content: the full interview prep (sections A–F).
+Note in summary: "Application not yet logged — run /log-application [url] to link it."
+
+If Notion MCP is not connected: skip step 7, note in summary.
+
+### 8. Git commit
 ```
 git add outputs/interview-prep/
 git commit -m "feat(interview-prep): YYYY-MM-DD · [Job Title] @ [Company]"
@@ -114,7 +133,7 @@ git pull --rebase origin main
 git push origin main
 ```
 
-### 8. Print summary — then STOP
+### 9. Print summary — then STOP
 ```
 ✅ Interview Prep — [Job Title] @ [Company] — YYYY-MM-DD
 Source: apply-prep package / fresh research
@@ -127,6 +146,8 @@ Quick brief:
 
 Hard question flagged: [the requirement to watch out for]
 Salary: [within / above / below target — one line]
-Saved: outputs/interview-prep/[slug]/interview_prep_YYYY-MM-DD.md
+
+File:   outputs/interview-prep/[slug]/interview_prep_YYYY-MM-DD.md
+Notion: written to Applications row / standalone page created / skipped
 ```
 STOP after printing the summary.

@@ -88,5 +88,8 @@ Company: [name] | Role: [title]
 Status: [status]
 KB updated: data/knowledge_base.json
 Notion: [link to Applications database page, or "skipped — database not found"]
+
+When you receive an interview invite:
+  /interview-prep [url]  → generates prep + writes it directly into this Notion row
 ```
 STOP after printing the summary.
