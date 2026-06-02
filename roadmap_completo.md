@@ -1,172 +1,172 @@
-# jobAI — Roadmap Completo
-# Produto + Aprendizado + Documentação
-# Ritmo: 1h/dia + 2h fim de semana = ~9h/semana
+# jobAI — Complete Roadmap
+# Product + Learning + Documentation
+# Pace: 1h/day + 2h weekend = ~9h/week
 
 ---
 
-## Como usar este roadmap
+## How to use this roadmap
 
-Cada card tem:
-- O que fazer (ação concreta)
-- O que aprender (conceito)
-- O que documentar no Obsidian (nota a criar)
-- Tempo estimado
-- Critério de pronto (como saber que terminou)
+Each card has:
+- What to do (concrete action)
+- What to learn (the concept)
+- What to document in Obsidian (note to create)
+- Estimated time
+- Done criteria (how to know you're finished)
 
-Regra de ouro: nenhum card está Done sem os três — feito, funcionando, documentado.
+Golden rule: no card is Done without all three — built, working, and documented.
 
-Importe no Notion como database com as colunas:
-Status | Fase | Tipo | Tempo | Semana
-
----
-
-## FASE 0 — Organizar a casa
-### Objetivo: estabilizar o que existe antes de construir mais
+Import into Notion as a database with these columns:
+Status | Phase | Type | Time | Week
 
 ---
 
-### Card 0.1 — Configurar o Obsidian
-- **Tipo:** Setup
-- **Tempo:** 1h
-- **Semana:** 1
+## PHASE 0 — Organize the house
+### Goal: stabilize what exists before building more
 
-**O que fazer:**
-Criar o vault "Segundo Cérebro" com esta estrutura de pastas:
+---
+
+### Card 0.1 — Configure Obsidian
+- **Type:** Setup
+- **Time:** 1h
+- **Week:** 1
+
+**What to do:**
+Create the "Second Brain" vault with this folder structure:
 ```
-00_Inbox        ← captura rápida
-01_Projetos     ← jobAI e futuros projetos
-02_Conhecimento ← Claude Code, MCP, Routines, etc
-03_Carreira     ← vagas, CV, networking
-04_Daily        ← notas do dia
+00_Inbox        ← quick capture
+01_Projects     ← jobAI and future projects
+02_Knowledge    ← Claude Code, MCP, Routines, etc.
+03_Career       ← jobs, CV, networking
+04_Daily        ← daily notes
 ```
 
-**O que aprender:**
-Por que vault único (não um por projeto). O valor está nas conexões entre as coisas — quando você linka o que aprendeu de MCP com onde aplicou no jobAI, isso vira conhecimento navegável.
+**What to learn:**
+Why a single vault (not one per project). The value comes from connections between things — when you link what you learned about MCP to where you applied it in jobAI, it becomes navigable knowledge.
 
-**Documentar no Obsidian:**
-Criar nota `02_Conhecimento/Obsidian — Como usar este vault.md` explicando a estrutura e a regra de linkagem.
+**Document in Obsidian:**
+Create note `02_Knowledge/Obsidian — How to use this vault.md` explaining the structure and the linking rule.
 
-**Critério de pronto:** Vault criado, 5 pastas, primeira nota em cada uma.
+**Done criteria:** Vault created, 5 folders, first note in each.
 
 ---
 
-### Card 0.2 — Colocar os arquivos do perfil no projeto
-- **Tipo:** Feature
-- **Tempo:** 30min
-- **Semana:** 1
+### Card 0.2 — Add profile files to the project
+- **Type:** Feature
+- **Time:** 30min
+- **Week:** 1
 
-**O que fazer:**
-Copiar os dois arquivos para a raiz do projeto jobAI:
+**What to do:**
+Copy both files to the jobAI project root:
 - `application_profile.json`
 - `application_narratives.md`
 
-Commitar: `chore(profile): add structured application profile and narratives`
+Commit: `chore(profile): add structured application profile and narratives`
 
-**O que aprender:**
-Por que separar dados estruturados (JSON) de narrativos (markdown). O agente usa o JSON pra preencher campos e o markdown pra responder perguntas abertas.
+**What to learn:**
+Why to separate structured data (JSON) from narratives (markdown). The agent uses JSON to fill in fields and markdown to answer open-ended questions.
 
-**Documentar no Obsidian:**
-`01_Projetos/jobAI/Perfil de candidatura.md` — o que é cada arquivo e como o agente usa.
+**Document in Obsidian:**
+`01_Projects/jobAI/Application profile.md` — what each file is and how the agent uses it.
 
-**Critério de pronto:** Dois arquivos no repo, commitados, datas do CV conferidas.
-
----
-
-### Card 0.3 — Migrar de GitHub Actions para Routines
-- **Tipo:** Infra
-- **Tempo:** 2h
-- **Semana:** 1 (fim de semana)
-
-**O que fazer:**
-1. Abrir o Claude Code na pasta do projeto
-2. Criar as 3 Routines com `/schedule`:
-   - Daily Job Hunter: todo dia 7h BRT
-   - Weekly CV Optimizer: domingo 20h BRT
-   - Weekly Report: segunda 6h BRT
-3. Desativar os workflows do GitHub Actions
-4. Testar rodando uma Routine manualmente
-
-**O que aprender:**
-Routines rodam na nuvem da Anthropic usando seu Pro — sem custo de API, sem precisar de máquina ligada. GitHub Actions precisa de API key e cobra por token.
-
-**Documentar no Obsidian:**
-`02_Conhecimento/Claude Routines.md` — o que são, como criar, diferença vs GitHub Actions, limite de runs do Pro.
-
-**Critério de pronto:** 3 Routines ativas, GitHub Actions desativados, um run manual bem-sucedido.
+**Done criteria:** Both files in the repo, committed, CV dates verified.
 
 ---
 
-### Card 0.4 — Montar o Kanban no Notion
-- **Tipo:** Setup
-- **Tempo:** 1h
-- **Semana:** 2
+### Card 0.3 — Migrate from GitHub Actions to Routines
+- **Type:** Infra
+- **Time:** 2h
+- **Week:** 1 (weekend)
 
-**O que fazer:**
-1. Ir em `claude.ai/customize/connectors` e adicionar o Notion
-2. Criar uma página "jobAI" no Notion
-3. Adicionar a conexão do Claude nessa página (menu "..." → Add connections)
-4. Abrir o Claude Code local e rodar:
+**What to do:**
+1. Open Claude Code in the project folder
+2. Create the 3 Routines with `/schedule`:
+   - Daily Job Hunter: every day 7AM BRT
+   - Weekly CV Optimizer: Sunday 8PM BRT
+   - Weekly Report: Monday 6AM BRT
+3. Disable the GitHub Actions workflows
+4. Test by running one Routine manually
+
+**What to learn:**
+Routines run on Anthropic's cloud using your Pro plan — no API cost, no need for your machine to be on. GitHub Actions requires an API key and charges per token.
+
+**Document in Obsidian:**
+`02_Knowledge/Claude Routines.md` — what they are, how to create, difference vs GitHub Actions, Pro plan run limits.
+
+**Done criteria:** 3 Routines active, GitHub Actions disabled, one successful manual run.
+
+---
+
+### Card 0.4 — Build the Kanban in Notion
+- **Type:** Setup
+- **Time:** 1h
+- **Week:** 2
+
+**What to do:**
+1. Go to `claude.ai/customize/connectors` and add Notion
+2. Create a "jobAI" page in Notion
+3. Add Claude connection to that page (menu "..." → Add connections)
+4. Open Claude Code locally and run:
 
 ```
-Read jobAI_roadmap_notion.md and create a Notion database 
+Read jobAI_roadmap_notion.md and create a Notion database
 inside the page called "jobAI" with these properties:
 - Card (title)
-- Fase (select): Fase 0, Fase 1, Fase 2, Fase 3, Fase 4, Fase 5
-- Tipo (select): Feature, Learning, Docs, Infra, Setup
-- Tempo (text)
+- Phase (select): Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5
+- Type (select): Feature, Learning, Docs, Infra, Setup
+- Time (text)
 - Status (select): Backlog, To Do, Doing, Done
 
-Create one entry per card in the file. Set Fase 0 cards to 
+Create one entry per card in the file. Set Phase 0 cards to
 "To Do" and everything else to "Backlog". Do not invent cards.
 ```
 
-5. No Notion, mudar a view para Board agrupado por Status
+5. In Notion, switch the view to Board grouped by Status
 
-**O que aprender:**
-MCP (Model Context Protocol) — o protocolo que permite o Claude operar sistemas externos como o Notion. Quando você conecta via claude.ai, os conectores ficam disponíveis no Claude Code local automaticamente (só funciona com OAuth Pro, não com API key).
+**What to learn:**
+MCP (Model Context Protocol) — the protocol that lets Claude operate external systems like Notion. When you connect via claude.ai, the connectors become available in Claude Code locally automatically (only works with OAuth Pro, not with API key).
 
-**Documentar no Obsidian:**
-`02_Conhecimento/MCP — O que é e como funciona.md` — definição, diferença de API tradicional, como conectar, modelo de permissão.
+**Document in Obsidian:**
+`02_Knowledge/MCP — What it is and how it works.md` — definition, difference from traditional API, how to connect, permission model.
 
-**Critério de pronto:** Kanban no Notion com todos os cards, view de Board funcionando.
-
----
-
-## FASE 1 — Descoberta mais inteligente
-### Objetivo: vagas certas chegando sem esforço
+**Done criteria:** Kanban in Notion with all cards, Board view working.
 
 ---
 
-### Card 1.1 — Expandir escopo de roles
-- **Tipo:** Feature
-- **Tempo:** 30min
-- **Semana:** 3
+## PHASE 1 — Smarter discovery
+### Goal: the right jobs arriving without effort
 
-**O que fazer:**
-Abrir `config.json` e adicionar nos target_roles:
+---
+
+### Card 1.1 — Expand role scope
+- **Type:** Feature
+- **Time:** 30min
+- **Week:** 3
+
+**What to do:**
+Open `config.json` and add to target_roles:
 - AI Builder
 - AI Engineer
 - Automation Specialist
 - Process Transformation Specialist
 - Solutions Engineer
 
-**O que aprender:**
-Como o `config.json` molda o comportamento de todos os agentes. Alterar um arquivo de configuração central é mais poderoso que alterar cada agente individualmente.
+**What to learn:**
+How `config.json` shapes the behavior of all agents. Changing one central configuration file is more powerful than changing each agent individually.
 
-**Documentar no Obsidian:**
-`01_Projetos/jobAI/Como o config molda os agentes.md`
+**Document in Obsidian:**
+`01_Projects/jobAI/How config shapes the agents.md`
 
-**Critério de pronto:** Próximo run do job hunter traz vagas das novas categorias.
+**Done criteria:** Next job hunter run brings jobs from the new categories.
 
 ---
 
-### Card 1.2 — Deduplicação e TTL
-- **Tipo:** Feature
-- **Tempo:** 1h
-- **Semana:** 3
+### Card 1.2 — Deduplication and TTL
+- **Type:** Feature
+- **Time:** 1h
+- **Week:** 3
 
-**O que fazer:**
-Abrir o Claude Code e pedir:
+**What to do:**
+Open Claude Code and ask:
 ```
 Read .claude/commands/hunt-jobs.md and data/knowledge_base.json.
 Add URL-based deduplication before appending new jobs.
@@ -174,330 +174,330 @@ Add TTL: remove entries older than 90 days on each weekly run.
 Commit the changes.
 ```
 
-**O que aprender:**
-Data hygiene — por que dados sujos distorcem análise. Uma vaga salva 5 vezes parece 5x mais demandada.
+**What to learn:**
+Data hygiene — why dirty data distorts analysis. A job saved 5 times looks 5x more in demand than it actually is.
 
-**Documentar no Obsidian:**
-`02_Conhecimento/Data hygiene em agentes.md`
+**Document in Obsidian:**
+`02_Knowledge/Data hygiene in agents.md`
 
-**Critério de pronto:** knowledge_base não duplica, não cresce infinito.
-
----
-
-### Card 1.3 — Trend tracking real
-- **Tipo:** Feature
-- **Tempo:** 1h
-- **Semana:** 4
-
-**O que fazer:**
-Pedir pro Claude Code atualizar o `analyze-gaps.md` para comparar keywords desta semana vs semana anterior com números reais — não setas estimadas.
-
-**O que aprender:**
-Análise temporal de dados. Tendência real vs snapshot isolado.
-
-**Documentar no Obsidian:**
-`01_Projetos/jobAI/Como funciona o trend tracking.md`
-
-**Critério de pronto:** Weekly report mostra "↑ 4→7 jobs" em vez de "↑↑↑".
+**Done criteria:** knowledge_base does not duplicate, does not grow unbounded.
 
 ---
 
-### Card 1.4 — Alerta por email para vagas top
-- **Tipo:** Feature
-- **Tempo:** 1h 30min
-- **Semana:** 4
+### Card 1.3 — Real trend tracking
+- **Type:** Feature
+- **Time:** 1h
+- **Week:** 4
 
-**O que fazer:**
-1. Conectar Gmail em `claude.ai/customize/connectors`
-2. Pedir pro Claude Code atualizar o hunt-jobs para enviar email quando score >= 9
+**What to do:**
+Ask Claude Code to update `analyze-gaps.md` to compare keywords from this week vs last week with real numbers — not estimated arrows.
 
-**O que aprender:**
-Trigger condicional — o agente age diferente dependendo do resultado. Segundo MCP conectado (Gmail além do Notion).
+**What to learn:**
+Temporal data analysis. Real trends vs isolated snapshots.
 
-**Documentar no Obsidian:**
-`02_Conhecimento/MCP — Gmail.md` — como conectar, casos de uso.
+**Document in Obsidian:**
+`01_Projects/jobAI/How trend tracking works.md`
 
-**Critério de pronto:** Recebe email quando aparece vaga 9-10, sem esperar segunda.
-
----
-
-## FASE 2 — Posicionamento
-### Objetivo: CV e LinkedIn sempre alinhados ao mercado
+**Done criteria:** Weekly report shows "↑ 4→7 jobs" instead of "↑↑↑".
 
 ---
 
-### Card 2.1 — CV personalizado por vaga
-- **Tipo:** Feature
-- **Tempo:** 2h
-- **Semana:** 5 (fim de semana)
+### Card 1.4 — Email alert for top jobs
+- **Type:** Feature
+- **Time:** 1h 30min
+- **Week:** 4
 
-**O que fazer:**
-Criar novo comando `.claude/commands/cv-by-job.md`:
-Dado uma URL de vaga, o agente lê a vaga, compara com seu perfil, e gera um `cv_[empresa].md` customizado pra aquela oportunidade específica.
+**What to do:**
+1. Connect Gmail at `claude.ai/customize/connectors`
+2. Ask Claude Code to update hunt-jobs to send an email when score >= 9
 
-**O que aprender:**
-Geração condicional por contexto. Por que CV genérico converte menos que CV alinhado.
+**What to learn:**
+Conditional trigger — the agent acts differently depending on the result. Second MCP connected (Gmail in addition to Notion).
 
-**Documentar no Obsidian:**
-`01_Projetos/jobAI/CV por vaga — como funciona.md`
+**Document in Obsidian:**
+`02_Knowledge/MCP — Gmail.md` — how to connect, use cases.
 
-**Critério de pronto:** Gera cv_[empresa].md diferente do cv genérico, com bullets realinhados.
-
----
-
-### Card 2.2 — Análise do LinkedIn
-- **Tipo:** Feature
-- **Tempo:** 2h
-- **Semana:** 6
-
-**O que fazer:**
-Criar comando que compara seu headline, about e experiências do LinkedIn com as keywords mais pedidas pelo mercado (do gap_report), e sugere melhorias de copy.
-
-**O que aprender:**
-LinkedIn como produto. Headline é SEO, about é pitch, experiências são prova.
-
-**Documentar no Obsidian:**
-`03_Carreira/LinkedIn — estratégia de posicionamento.md`
-
-**Critério de pronto:** Relatório com sugestões concretas de melhoria do perfil.
+**Done criteria:** Receives email when a 9–10 job appears, without waiting until Monday.
 
 ---
 
-### Card 2.3 — Alinhamento com seus interesses
-- **Tipo:** Feature
-- **Tempo:** 1h
-- **Semana:** 6
-
-**O que fazer:**
-Adicionar no `application_profile.json` uma seção `interests` com o que você quer fazer, gosta de fazer, e quer evitar. O agente passa a ponderar isso nas recomendações.
-
-**O que aprender:**
-Otimização multi-objetivo — equilibrar o que o mercado pede com o que você quer.
-
-**Documentar no Obsidian:**
-`03_Carreira/O que eu quero — clareza de direção.md`
-
-**Critério de pronto:** Recomendações do agente refletem seus interesses, não só demanda de mercado.
+## PHASE 2 — Positioning
+### Goal: CV and LinkedIn always aligned with the market
 
 ---
 
-## FASE 3 — Aplicação assistida
-### Objetivo: eliminar o trabalho mecânico de preencher formulários
+### Card 2.1 — CV customized per job
+- **Type:** Feature
+- **Time:** 2h
+- **Week:** 5 (weekend)
+
+**What to do:**
+Create new command `.claude/commands/cv-by-job.md`:
+Given a job URL, the agent reads the job, compares it with the profile, and generates a `cv_[company].md` customized for that specific opportunity.
+
+**What to learn:**
+Context-conditional generation. Why a generic CV converts less than an aligned CV.
+
+**Document in Obsidian:**
+`01_Projects/jobAI/CV per job — how it works.md`
+
+**Done criteria:** Generates cv_[company].md that differs from the generic CV, with realigned bullets.
 
 ---
 
-### Card 3.1 — Aprender Chrome MCP
-- **Tipo:** Learning
-- **Tempo:** 2h
-- **Semana:** 7 (fim de semana)
+### Card 2.2 — LinkedIn analysis
+- **Type:** Feature
+- **Time:** 2h
+- **Week:** 6
 
-**O que fazer:**
-1. Instalar o Claude in Chrome (extensão beta)
-2. Testar o agente preenchendo um formulário simples (não de vaga ainda)
-3. Entender o modelo de permissão e os riscos
+**What to do:**
+Create a command that compares your LinkedIn headline, about, and experience sections with the most in-demand keywords (from gap_report), and suggests copy improvements.
 
-**O que aprender:**
-Browser automation — o agente opera o navegador como um humano. Mais poderoso e mais arriscado que MCP de API.
+**What to learn:**
+LinkedIn as a product. Headline is SEO, about is pitch, experience is proof.
 
-**Documentar no Obsidian:**
-`02_Conhecimento/Chrome MCP — browser automation.md` — o que é, como instalar, riscos, quando usar.
+**Document in Obsidian:**
+`03_Career/LinkedIn — positioning strategy.md`
 
-**Critério de pronto:** Consegue fazer o agente abrir uma página e preencher um campo simples.
+**Done criteria:** Report with specific improvement suggestions for the profile.
 
 ---
 
-### Card 3.2 — Engine de preenchimento para ATS
-- **Tipo:** Feature
-- **Tempo:** 3h
-- **Semana:** 8
+### Card 2.3 — Interest alignment
+- **Type:** Feature
+- **Time:** 1h
+- **Week:** 6
 
-**O que fazer:**
-Criar comando `.claude/commands/apply-ats.md`:
-Dado uma URL de vaga em Greenhouse, Lever ou Ashby, o agente abre o formulário, lê o `application_profile.json`, preenche todos os campos e para antes de submeter para sua revisão.
+**What to do:**
+Add an `interests` section to `application_profile.json` with what you want to do, enjoy doing, and want to avoid. The agent will start weighing this in its recommendations.
 
-**O que aprender:**
-Mapeamento de campos — como o agente relaciona campos de formulário com dados estruturados. Automação assistida vs automação total.
+**What to learn:**
+Multi-objective optimization — balancing what the market demands with what you want.
 
-**Documentar no Obsidian:**
-`01_Projetos/jobAI/Apply ATS — como funciona.md`
+**Document in Obsidian:**
+`03_Career/What I want — direction clarity.md`
 
-**Critério de pronto:** Preenche uma vaga real de ATS, você só revisa e dá o clique final.
-
----
-
-### Card 3.3 — Pacote de candidatura completo
-- **Tipo:** Feature
-- **Tempo:** 2h
-- **Semana:** 9
-
-**O que fazer:**
-Criar comando `/apply-prep`:
-Dado uma URL de vaga, o agente gera em um único pacote:
-- CV customizado pra vaga
-- Respostas rascunhadas das perguntas abertas
-- Briefing da empresa (contexto, produto, cultura)
-- Suas histórias STAR mais relevantes pra aquela vaga
-
-**O que aprender:**
-RAG na prática — o agente combina dados externos (vaga, empresa) com seus dados internos (profile, narratives) para gerar algo personalizado.
-
-**Documentar no Obsidian:**
-`01_Projetos/jobAI/Apply prep — pacote de candidatura.md`
-
-**Critério de pronto:** Pacote completo em menos de 5 minutos por vaga.
+**Done criteria:** Agent recommendations reflect your interests, not just market demand.
 
 ---
 
-### Card 3.4 — Tracker de candidaturas no Notion
-- **Tipo:** Feature
-- **Tempo:** 1h 30min
-- **Semana:** 9
-
-**O que fazer:**
-Adicionar campo `applied` e `status` no knowledge_base. Criar segundo database no Notion "Candidaturas" com: empresa, vaga, data, status, próximo passo.
-
-**O que aprender:**
-Gestão de pipeline de candidatura. Por que acompanhar é tão importante quanto aplicar.
-
-**Documentar no Obsidian:**
-`03_Carreira/Pipeline de candidatura.md`
-
-**Critério de pronto:** Dashboard no Notion mostrando todas as candidaturas e status.
+## PHASE 3 — Assisted application
+### Goal: eliminate the mechanical work of filling forms
 
 ---
 
-## FASE 4 — Especialização
-### Objetivo: você como profissional de IA, não só usuário
+### Card 3.1 — Learn Chrome MCP
+- **Type:** Learning
+- **Time:** 2h
+- **Week:** 7 (weekend)
+
+**What to do:**
+1. Install Claude in Chrome (beta extension)
+2. Test the agent filling a simple form (not a job application yet)
+3. Understand the permission model and the risks
+
+**What to learn:**
+Browser automation — the agent operates the browser like a human. More powerful and more risky than API-based MCP.
+
+**Document in Obsidian:**
+`02_Knowledge/Chrome MCP — browser automation.md` — what it is, how to install, risks, when to use.
+
+**Done criteria:** Can make the agent open a page and fill in a simple field.
 
 ---
 
-### Card 4.1 — Criar uma Skill própria
-- **Tipo:** Learning
-- **Tempo:** 2h
-- **Semana:** 10 (fim de semana)
+### Card 3.2 — ATS form-filling engine
+- **Type:** Feature
+- **Time:** 3h
+- **Week:** 8
 
-**O que fazer:**
-Empacotar "otimização de CV para ATS" como uma Claude Skill reutilizável — que qualquer pessoa pode usar no próprio projeto.
+**What to do:**
+Create command `.claude/commands/apply-ats.md`:
+Given a job URL on Greenhouse, Lever, or Ashby, the agent opens the form, reads `application_profile.json`, fills all fields, and stops before submitting for your review.
 
-**O que aprender:**
-Skills — pacotes de conhecimento reutilizáveis. Diferença entre usar Claude Code e estender o Claude Code.
+**What to learn:**
+Field mapping — how the agent relates form fields to structured data. Assisted automation vs full automation.
 
-**Documentar no Obsidian:**
-`02_Conhecimento/Claude Skills — como criar.md`
+**Document in Obsidian:**
+`01_Projects/jobAI/Apply ATS — how it works.md`
 
-**Critério de pronto:** Skill funciona e poderia ser usada em outro projeto.
-
----
-
-### Card 4.2 — Explorar Cowork
-- **Tipo:** Learning
-- **Tempo:** 1h
-- **Semana:** 11
-
-**O que fazer:**
-Testar o Cowork para uma tarefa de conhecimento não-técnica — por exemplo, organizar suas notas do Obsidian automaticamente.
-
-**O que aprender:**
-Diferença entre Claude Code (dev, código, arquivos) e Cowork (trabalho de conhecimento, não-técnico). Quando usar cada um.
-
-**Documentar no Obsidian:**
-`02_Conhecimento/Cowork vs Claude Code — quando usar cada um.md`
-
-**Critério de pronto:** Consegue explicar a diferença e citar um caso de uso real de cada.
+**Done criteria:** Fills a real ATS application — you only review and click submit.
 
 ---
 
-### Card 4.3 — Preparação de entrevista por vaga
-- **Tipo:** Feature
-- **Tempo:** 2h
-- **Semana:** 11
+### Card 3.3 — Complete application package
+- **Type:** Feature
+- **Time:** 2h
+- **Week:** 9
 
-**O que fazer:**
-Criar comando `/interview-prep`:
-Dado o nome de uma empresa, o agente pesquisa o produto, cultura, notícias recentes, e gera um briefing personalizado com suas histórias mais relevantes para aquela entrevista.
+**What to do:**
+Create command `/apply-prep`:
+Given a job URL, the agent generates in a single package:
+- CV customized for the job
+- Drafted answers for open-ended questions
+- Company briefing (context, product, culture)
+- Your most relevant STAR stories for that specific job
 
-**O que aprender:**
-Pesquisa contextual em tempo real + seus dados internos. Como se preparar com IA sem soar artificial.
+**What to learn:**
+RAG in practice — the agent combines external data (job, company) with your internal data (profile, narratives) to generate something personalized.
 
-**Documentar no Obsidian:**
-`03_Carreira/Como me preparar para entrevistas com IA.md`
+**Document in Obsidian:**
+`01_Projects/jobAI/Apply prep — application package.md`
 
-**Critério de pronto:** Briefing gerado em menos de 3 minutos que cobre empresa, perguntas prováveis e suas histórias.
-
----
-
-### Card 4.4 — Case de estudo publicável
-- **Tipo:** Docs
-- **Tempo:** 3h
-- **Semana:** 12 (fim de semana)
-
-**O que fazer:**
-Transformar toda a jornada do jobAI num case documentado:
-- AS IS (antes)
-- Decisões técnicas e por quê
-- O que quebrou e como debugou
-- Resultados reais (vagas encontradas, tempo economizado)
-- O que aprendeu
-
-**O que aprender:**
-Storytelling técnico. Como transformar um projeto em prova de competência.
-
-**Documentar no Obsidian:**
-`01_Projetos/jobAI/Case de estudo completo.md`
-
-**Critério de pronto:** Texto publicável que você mostra em entrevistas e no LinkedIn.
+**Done criteria:** Complete package in under 5 minutes per job.
 
 ---
 
-## Resumo executivo
+### Card 3.4 — Application tracker in Notion
+- **Type:** Feature
+- **Time:** 1h 30min
+- **Week:** 9
 
-| Fase | Foco | Semanas | Horas |
+**What to do:**
+Add `applied` and `status` fields to knowledge_base. Create a second Notion database "Applications" with: company, job, date, status, next step.
+
+**What to learn:**
+Application pipeline management. Why tracking is as important as applying.
+
+**Document in Obsidian:**
+`03_Career/Application pipeline.md`
+
+**Done criteria:** Notion dashboard showing all applications and their status.
+
+---
+
+## PHASE 4 — Specialization
+### Goal: you as an AI professional, not just an AI user
+
+---
+
+### Card 4.1 — Build your own Skill
+- **Type:** Learning
+- **Time:** 2h
+- **Week:** 10 (weekend)
+
+**What to do:**
+Package "CV optimization for ATS" as a reusable Claude Skill — one that anyone can use in their own project.
+
+**What to learn:**
+Skills — reusable knowledge packages. The difference between using Claude Code and extending Claude Code.
+
+**Document in Obsidian:**
+`02_Knowledge/Claude Skills — how to create.md`
+
+**Done criteria:** Skill works and could be used in another project.
+
+---
+
+### Card 4.2 — Explore Cowork
+- **Type:** Learning
+- **Time:** 1h
+- **Week:** 11
+
+**What to do:**
+Test Cowork for a non-technical knowledge task — for example, organizing your Obsidian notes automatically.
+
+**What to learn:**
+Difference between Claude Code (dev, code, files) and Cowork (knowledge work, non-technical). When to use each.
+
+**Document in Obsidian:**
+`02_Knowledge/Cowork vs Claude Code — when to use each.md`
+
+**Done criteria:** Can explain the difference and cite a real use case for each.
+
+---
+
+### Card 4.3 — Interview preparation per job
+- **Type:** Feature
+- **Time:** 2h
+- **Week:** 11
+
+**What to do:**
+Create command `/interview-prep`:
+Given a company name, the agent researches the product, culture, recent news, and generates a personalized briefing with your most relevant stories for that interview.
+
+**What to learn:**
+Real-time contextual research + your internal data. How to prepare with AI without sounding artificial.
+
+**Document in Obsidian:**
+`03_Career/How to prepare for interviews with AI.md`
+
+**Done criteria:** Briefing generated in under 3 minutes covering company, likely questions, and your stories.
+
+---
+
+### Card 4.4 — Publishable case study
+- **Type:** Docs
+- **Time:** 3h
+- **Week:** 12 (weekend)
+
+**What to do:**
+Transform the entire jobAI journey into a documented case study:
+- AS IS (before)
+- Technical decisions and why
+- What broke and how you debugged it
+- Real results (jobs found, time saved)
+- What you learned
+
+**What to learn:**
+Technical storytelling. How to transform a project into proof of competence.
+
+**Document in Obsidian:**
+`01_Projects/jobAI/Complete case study.md`
+
+**Done criteria:** Publishable text you can show in interviews and on LinkedIn.
+
+---
+
+## Executive summary
+
+| Phase | Focus | Weeks | Hours |
 |---|---|---|---|
-| Fase 0 | Organizar a casa | 1-2 | ~5h |
-| Fase 1 | Descoberta inteligente | 3-4 | ~6h |
-| Fase 2 | Posicionamento | 5-6 | ~7h |
-| Fase 3 | Aplicação assistida | 7-9 | ~10h |
-| Fase 4 | Especialização | 10-12 | ~10h |
-| **Total** | | **12 semanas** | **~38h** |
+| Phase 0 | Organize the house | 1–2 | ~5h |
+| Phase 1 | Smart discovery | 3–4 | ~6h |
+| Phase 2 | Positioning | 5–6 | ~7h |
+| Phase 3 | Assisted application | 7–9 | ~10h |
+| Phase 4 | Specialization | 10–12 | ~10h |
+| **Total** | | **12 weeks** | **~38h** |
 
 ---
 
-## O que você aprende em cada fase (trilha de conhecimento)
+## What you learn in each phase (knowledge track)
 
-- **Fase 0:** Obsidian, Claude Routines, MCP básico (Notion)
-- **Fase 1:** Config de agente, data hygiene, análise temporal, MCP Gmail
-- **Fase 2:** Geração condicional, LinkedIn como produto, otimização multi-objetivo
-- **Fase 3:** Chrome MCP, browser automation, RAG na prática, pipeline de candidatura
-- **Fase 4:** Skills, Cowork, pesquisa contextual, storytelling técnico
+- **Phase 0:** Obsidian, Claude Routines, basic MCP (Notion)
+- **Phase 1:** Agent configuration, data hygiene, temporal analysis, Gmail MCP
+- **Phase 2:** Conditional generation, LinkedIn as a product, multi-objective optimization
+- **Phase 3:** Chrome MCP, browser automation, RAG in practice, application pipeline
+- **Phase 4:** Skills, Cowork, contextual research, technical storytelling
 
 ---
 
-## Estrutura do vault Obsidian ao final das 12 semanas
+## Obsidian vault structure at the end of 12 weeks
 
 ```
 00_Inbox/
-01_Projetos/
+01_Projects/
   └── jobAI/
-        ├── Perfil de candidatura
-        ├── Como o config molda os agentes
-        ├── CV por vaga
+        ├── Application profile
+        ├── How config shapes the agents
+        ├── CV per job
         ├── Apply ATS
         ├── Apply prep
-        ├── Pipeline de candidatura
-        └── Case de estudo completo
-02_Conhecimento/
-  ├── Obsidian — Como usar este vault
+        ├── Application pipeline
+        └── Complete case study
+02_Knowledge/
+  ├── Obsidian — How to use this vault
   ├── Claude Routines
-  ├── MCP — O que é e como funciona
+  ├── MCP — What it is and how it works
   ├── MCP — Gmail
   ├── Chrome MCP — browser automation
-  ├── Data hygiene em agentes
-  ├── Claude Skills — como criar
+  ├── Data hygiene in agents
+  ├── Claude Skills — how to create
   └── Cowork vs Claude Code
-03_Carreira/
-  ├── LinkedIn — estratégia de posicionamento
-  ├── O que eu quero — clareza de direção
-  ├── Pipeline de candidatura
-  └── Como me preparar para entrevistas com IA
+03_Career/
+  ├── LinkedIn — positioning strategy
+  ├── What I want — direction clarity
+  ├── Application pipeline
+  └── How to prepare for interviews with AI
 04_Daily/
 ```
