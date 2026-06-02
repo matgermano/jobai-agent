@@ -89,6 +89,9 @@ jobAI/
         ├── weekly-report.md
         ├── cv-by-job.md          ← Phase 2: tailored CV for a specific job URL
         ├── linkedin-optimizer.md ← Phase 2: LinkedIn suggestions from CV + gap report (auto)
+        ├── apply-prep.md         ← Phase 3: full application package (CV + briefing + Q&A + STAR)
+        ├── apply-ats.md          ← Phase 3: ATS form-filler via Chrome MCP (requires Chrome MCP)
+        ├── log-application.md    ← Phase 3: log application to KB + Notion Applications database
         └── updatekanban.md
 ```
 
