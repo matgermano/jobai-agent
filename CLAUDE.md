@@ -72,6 +72,8 @@ jobAI/
 ├── config.json                      ← user parameters (source of truth for profile)
 ├── data/
 │   ├── cv.md                        ← current CV (source of truth)
+│   ├── application_profile.json     ← structured profile: personal, interests, strengths, positioning, ATS form answers
+│   ├── application_narratives.md    ← 5 STAR stories (real metrics only) for apply-prep + interview-prep
 │   ├── knowledge_base.json          ← accumulated jobs (deduped, TTL 90 days)
 │   └── kb_YYYY-WNN.json             ← weekly KB slices (e.g. kb_2026-W21.json)
 ├── outputs/
