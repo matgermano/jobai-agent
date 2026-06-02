@@ -38,12 +38,21 @@ jobs:
       - name: Prune knowledge base (keep last 90 days)
         run: |
           if [ -f "data/knowledge_base.json" ]; then
-            CUTOFF=$(date -d '90 days ago' +%Y-%m-%dT%H:%M:%S)
-            jq --arg cutoff "$CUTOFF" \
-              '[.[] | select(.found_at >= $cutoff)] | unique_by(.url)' \
-              data/knowledge_base.json > /tmp/kb_clean.json
-            mv /tmp/kb_clean.json data/knowledge_base.json
-            echo "Knowledge base pruned (TTL: 90 days) and deduplicated."
+            CUTOFF=$(date -d '90 days ago' +%s)
+            node -e "
+              const fs = require('fs');
+              const cutoff = $CUTOFF;
+              const kb = JSON.parse(fs.readFileSync('data/knowledge_base.json','utf8'));
+              const seen = new Set();
+              const clean = kb.filter(e => {
+                const ts = Math.floor(new Date(e.found_at).getTime() / 1000);
+                if (ts < cutoff || seen.has(e.url)) return false;
+                seen.add(e.url);
+                return true;
+              });
+              fs.writeFileSync('data/knowledge_base.json', JSON.stringify(clean, null, 2));
+              console.log('Pruned:', kb.length - clean.length, 'entries. Remaining:', clean.length);
+            "
           fi
 
       - name: Run analyze-gaps
@@ -78,6 +87,7 @@ jobs:
         run: |
           git add outputs/gap_report.md data/knowledge_base.json
           git diff --staged --quiet || git commit -m "feat(analysis): $(date +%Y-%m-%d) · gap analysis complete · cv-analyzer"
+          git pull --rebase origin main
           git push origin main
 
   optimize-cv:
@@ -131,4 +141,5 @@ jobs:
         run: |
           git add outputs/
           git diff --staged --quiet || git commit -m "feat(cv): $(date +%Y-%m-%d) · cv-optimizer weekly run"
+          git pull --rebase origin main
           git push origin main

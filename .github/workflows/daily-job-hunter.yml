@@ -35,12 +35,34 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Deduplicate knowledge base
+      - name: Set run date (BRT)
+        run: echo "RUN_DATE=$(TZ=America/Sao_Paulo date +%Y-%m-%d)" >> $GITHUB_ENV
+
+      - name: Deduplicate knowledge base and current week slice
         run: |
+          # Deduplicate main KB
           if [ -f "data/knowledge_base.json" ]; then
-            jq 'unique_by(.url)' data/knowledge_base.json > /tmp/kb_deduped.json
-            mv /tmp/kb_deduped.json data/knowledge_base.json
-            echo "Knowledge base deduplicated."
+            node -e "
+              const fs = require('fs');
+              const kb = JSON.parse(fs.readFileSync('data/knowledge_base.json','utf8'));
+              const seen = new Set();
+              const clean = kb.filter(e => seen.has(e.url) ? false : (seen.add(e.url), true));
+              fs.writeFileSync('data/knowledge_base.json', JSON.stringify(clean, null, 2));
+              console.log('KB deduplicated. Entries:', clean.length);
+            "
+          fi
+          # Deduplicate current week slice if it exists
+          WEEK=$(TZ=America/Sao_Paulo date +%G-W%V)
+          if [ -f "data/kb_${WEEK}.json" ]; then
+            node -e "
+              const fs = require('fs');
+              const f = 'data/kb_${WEEK}.json';
+              const slice = JSON.parse(fs.readFileSync(f,'utf8'));
+              const seen = new Set();
+              const clean = slice.filter(e => seen.has(e.url) ? false : (seen.add(e.url), true));
+              fs.writeFileSync(f, JSON.stringify(clean, null, 2));
+              console.log('Slice deduplicated. Entries:', clean.length);
+            "
           fi
 
       - name: Run hunt-jobs
@@ -52,12 +74,12 @@ jobs:
         run: |
           claude -p "$(cat .claude/commands/hunt-jobs.md)" \
             --model claude-haiku-4-5-20251001 \
-            --allowedTools "Read,Write,WebSearch,WebFetch,Bash(git add:git commit:git push)" \
+            --allowedTools "Read,Write,WebSearch,WebFetch,Bash(git add:git commit:git pull:git push)" \
             --max-turns 20
 
       - name: Verify output was created
         run: |
-          OUTPUT_FILE="outputs/jobs_$(date +%Y-%m-%d).json"
+          OUTPUT_FILE="outputs/jobs_${RUN_DATE}.json"
           if [ ! -f "$OUTPUT_FILE" ]; then
             echo "::error::Expected output $OUTPUT_FILE was not created — Claude run may have failed."
             exit 1
@@ -67,8 +89,9 @@ jobs:
       - name: Commit and push results
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
-          OUTPUT_FILE="outputs/jobs_$(date +%Y-%m-%d).json"
-          JOB_COUNT=$(jq 'length' "$OUTPUT_FILE" 2>/dev/null || echo "0")
-          git add outputs/ data/knowledge_base.json data/
-          git diff --staged --quiet || git commit -m "feat(hunt): $(date +%Y-%m-%d) · ${JOB_COUNT} jobs found · job-hunter"
+          OUTPUT_FILE="outputs/jobs_${RUN_DATE}.json"
+          JOB_COUNT=$(node -e "const j=require('./${OUTPUT_FILE}');console.log(j.length)" 2>/dev/null || echo "0")
+          git add outputs/ data/
+          git diff --staged --quiet || git commit -m "feat(hunt): ${RUN_DATE} · ${JOB_COUNT} jobs found · job-hunter"
+          git pull --rebase origin main
           git push origin main

@@ -47,12 +47,12 @@ Accept if snippet contains:
 
 ### 5. Calculate fit score (0–10) from snippet data only
 - Role match: +0–3
-- Salary in $80k–$110k range: +2 (unknown = +1)
+- Salary in $70k–$100k range: +2 (unknown = +1)
 - Location confirmed worldwide: +2
 - Keyword overlap with cv.md: +0–2
 - Seniority match: +0–1
 
-Only keep fit_score >= 5.
+Only keep fit_score >= `search.min_fit_score` from config.json (default 5).
 
 ### 6. Save output
 
@@ -91,26 +91,26 @@ Check if any jobs in today's filtered list have `fit_score >= 9`.
 
 **If any exist:** use the Gmail MCP to send one email to the address in `config.json` (`profile.email`):
 - **To:** `profile.email` from config.json
-- **Subject:** `🔥 jobAI — X vaga(s) com score 9+ encontradas hoje (YYYY-MM-DD)`
+- **Subject:** `jobAI Alert — X job(s) scored 9+ today (YYYY-MM-DD)`
 - **Body:**
 ```
-Olá,
+Hi,
 
-O job hunter encontrou X vaga(s) com score 9 ou 10 hoje.
+The job hunter found X job(s) scoring 9 or 10 today.
 
-[Para cada vaga com score >= 9:]
+[For each job with fit_score >= 9:]
 ──────────────────────────────
-Cargo: [title]
-Empresa: [company]
+Title: [title]
+Company: [company]
 Score: [fit_score]/10
 URL: [url]
-Salário: [salary_range]
-Requisitos principais: [key_requirements joined by ", "]
+Salary: [salary_range]
+Key requirements: [key_requirements joined by ", "]
 ──────────────────────────────
 
-Acesse o relatório completo: outputs/jobs_YYYY-MM-DD.json
+Full results: outputs/jobs_YYYY-MM-DD.json
 
-jobAI · rodando automaticamente para você
+jobAI · running automatically for you
 ```
 
 If Gmail MCP is not connected, skip this step and add a note to the print summary.
@@ -119,6 +119,7 @@ If Gmail MCP is not connected, skip this step and add a note to the print summar
 ```
 git add outputs/ data/
 git commit -m "feat(hunt): YYYY-MM-DD · X jobs found · job-hunter"
+git pull --rebase origin main
 git push origin main
 ```
 

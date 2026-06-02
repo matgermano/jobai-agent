@@ -11,7 +11,7 @@ I only work with what exists. I never invent experience, skills, projects, or ac
 
 ## Profile
 Read `config.json` for the full profile. Key values:
-- Target salary: $80,000–$110,000 USD/year
+- Target salary: $70,000–$100,000 USD/year
 - Seniority: Any level (Mid, Senior, Principal, Staff)
 - Contract: Full-time or Contract
 

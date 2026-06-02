@@ -69,8 +69,9 @@ Append to `outputs/cv_changelog.md`:
 
 ### 7. Git commit
 ```
-git add .
+git add outputs/
 git commit -m "feat(cv): YYYY-MM-DD · cv_v[N] generated · cv-optimizer"
+git pull --rebase origin main
 git push origin main
 ```
 
