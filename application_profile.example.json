@@ -166,6 +166,24 @@
     }
   ],
 
+  "interests": {
+    "want_to_do": [
+      "Build AI-powered automation systems",
+      "Product strategy for AI-native products",
+      "Process transformation using agentic tools"
+    ],
+    "enjoy": [
+      "Connecting technology to business outcomes",
+      "Building from scratch — greenfield products",
+      "Working closely with engineering teams"
+    ],
+    "want_to_avoid": [
+      "Pure project coordination without product ownership",
+      "Compliance-only or governance-focused roles",
+      "Large enterprise bureaucracy with no autonomy"
+    ]
+  },
+
   "common_form_answers": {
     "why_remote": "I've worked remotely across most of my career, leading distributed teams and C-level stakeholders across time zones. I'm fully set up and productive in remote-first environments.",
     "notice_period": "Available with standard notice — flexible to align with the team's needs.",

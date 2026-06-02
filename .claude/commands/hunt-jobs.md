@@ -15,6 +15,7 @@ Search for remote Product Manager job listings. Extract data from search result 
 ### 1. Load context (do not re-read if already loaded)
 - Read config.json
 - Read data/cv.md
+- Read application_profile.json (for interests alignment scoring)
 
 ### 2. Run these 4 searches — do not add more
 Stop after all 4 are complete. Do not run bonus searches.
@@ -51,6 +52,7 @@ Accept if snippet contains:
 - Location confirmed worldwide: +2
 - Keyword overlap with cv.md: +0–2
 - Seniority match: +0–1
+- Interest alignment: +1 if the role or requirements match `application_profile.json interests.want_to_do` keywords (AI, automation, agentic, product strategy, greenfield); -1 if role matches `interests.want_to_avoid` keywords (coordination only, compliance only, governance only)
 
 Only keep fit_score >= `search.min_fit_score` from config.json (default 5).
 

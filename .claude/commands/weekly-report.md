@@ -33,10 +33,12 @@ Show top 10 keywords.
 
 ### 4. Build study list
 Based ONLY on ❌ genuine gaps from gap_report.md:
+- Read `application_profile.json` interests section
 - List specific skills/tools to learn
 - Be concrete: "Learn Amplitude for product analytics" not "improve analytics"
 - For each item, suggest ONE free resource (documentation, course, or article)
 - Prioritize by frequency in job listings (most demanded = study first)
+- Mark items that align with `interests.want_to_do` with ⭐ — these are both high-demand AND aligned with what you want to do next
 
 ### 5. Save report
 Save as `outputs/weekly_report.md`:
@@ -80,8 +82,8 @@ _Generated Monday, YYYY-MM-DD at 06:00 BRT_
 ## 📚 Study list — what to learn this week
 Ranked by market demand:
 
-### 1. [Skill/Tool name]
-**Why:** Asked in X% of jobs this week
+### 1. ⭐ [Skill/Tool name]  ← ⭐ if interest-aligned
+**Why:** Asked in X jobs this week (↑/↓/NEW vs last week) — aligns with your interest in [area]
 **What to do:** [Concrete action]
 **Resource:** [Link or name of free resource]
 

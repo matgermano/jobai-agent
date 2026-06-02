@@ -9,6 +9,7 @@ Analyze CV gaps based on jobs found this week. Identify what the market is askin
 - Read `data/cv.md` — source of truth
 - Read `data/knowledge_base.json` — all jobs found; filter by date
 - Read `config.json` — profile rules
+- Read `application_profile.json` — interests (for study list alignment)
 
 ### 2. Partition jobs by week
 From `knowledge_base.json`:
@@ -47,9 +48,11 @@ Save as `outputs/gap_report.md`:
 | 1 | ... | X jobs | Y jobs | ↑ X→Y | [section] | Reframe bullet at [company] |
 
 ## ❌ Genuine gaps (study list — never touch CV)
-| Rank | Gap | This week | Last week | Trend | Notes |
-|------|-----|-----------|-----------|-------|-------|
-| 1 | ... | X jobs | Y jobs | NEW | ... |
+| Rank | Gap | This week | Last week | Trend | Interest | Notes |
+|------|-----|-----------|-----------|-------|----------|-------|
+| 1 | ... | X jobs | Y jobs | NEW | ⭐ / — | ... |
+
+Interest column: ⭐ = aligns with `application_profile.json interests.want_to_do`; — = neutral
 
 ## Fit score summary
 - Average current fit score: X.X / 10
